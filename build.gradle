@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'com.github.arthurpicht'
-version '0.0.1'
+version '0.0.1.4'
 
 repositories {
     mavenCentral()
