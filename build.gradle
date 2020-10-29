@@ -15,6 +15,14 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 }
 
+// since gradle 6.7
+// see https://docs.gradle.org/6.7/release-notes.html
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+}
+
 test {
     useJUnitPlatform()
 }
