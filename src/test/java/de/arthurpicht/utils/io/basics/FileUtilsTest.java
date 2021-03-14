@@ -3,21 +3,94 @@ package de.arthurpicht.utils.io.basics;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class FileUtilsTest {
 
     @Test
-    void rmDirR() {
+    void rmDirR() throws IOException {
 
+        try {
+            Files.createDirectories(Paths.get("testTemp/a/b/c"));
+            Files.createFile(Paths.get("testTemp/a/file_a.txt"));
+            Files.createFile(Paths.get("testTemp/a/b/c/file_c.txt"));
+        } catch (FileAlreadyExistsException e) {
+            // din
+        }
+
+        Path path = Paths.get("testTemp/a");
+        assertTrue(Files.exists(path));
+        FileUtils.rmDirR(path);
+        assertFalse(Files.exists(path));
     }
 
     @Test
-    void testRmDirR() {
+    void rmDirR_notExisting_neg() throws IOException {
+        Path path = Paths.get("testTemp/not_existing");
+        assertFalse(Files.exists(path));
+        try {
+            FileUtils.rmDirR(path);
+            fail(IllegalArgumentException.class.getSimpleName() + " expected.");
+        } catch (IllegalArgumentException e) {
+            assertTrue(e.getMessage().contains("No such directory"));
+        }
+    }
+
+    @Test
+    void rmDirR_noDir_neg() throws IOException {
+        Path path = Paths.get("testTemp/testFile.txt");
+        Files.createFile(path);
+        assertTrue(Files.exists(path));
+        try {
+            FileUtils.rmDirR(path);
+            fail(IllegalArgumentException.class.getSimpleName() + " expected.");
+        } catch (IllegalArgumentException e) {
+            assertTrue(e.getMessage().contains("No such directory"));
+        }
+        Files.delete(path);
+        assertFalse(Files.exists(path));
+    }
+
+    @Test
+    void testRmDirWithMaxDepth() throws IOException {
+        try {
+            Files.createDirectories(Paths.get("testTemp/a/b/c"));
+            Files.createFile(Paths.get("testTemp/a/file_a.txt"));
+            Files.createFile(Paths.get("testTemp/a/b/c/file_c.txt"));
+        } catch (FileAlreadyExistsException e) {
+            // din
+        }
+
+        Path path = Paths.get("testTemp/a");
+        assertTrue(Files.exists(path));
+        FileUtils.rmDirR(path, 3);
+        assertFalse(Files.exists(path));
+    }
+
+    @Test
+    void testRmDirWithMaxDepth_neg() throws IOException {
+        try {
+            Files.createDirectories(Paths.get("testTemp/a/b/c"));
+            Files.createFile(Paths.get("testTemp/a/file_a.txt"));
+            Files.createFile(Paths.get("testTemp/a/b/c/file_c.txt"));
+        } catch (FileAlreadyExistsException e) {
+            // din
+        }
+
+        Path path = Paths.get("testTemp/a");
+        assertTrue(Files.exists(path));
+        try {
+            FileUtils.rmDirR(path, 2);
+            fail(DirectoryNotEmptyException.class.getSimpleName() + " expected.");
+        } catch (DirectoryNotEmptyException e) {
+            // din
+        }
+
+        assertTrue(Files.exists(path));
+        FileUtils.rmDirR(path, 3);
+        assertFalse(Files.exists(path));
     }
 
     @Test
