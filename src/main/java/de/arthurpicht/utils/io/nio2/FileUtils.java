@@ -1,14 +1,10 @@
-package de.arthurpicht.utils.io.basics;
+package de.arthurpicht.utils.io.nio2;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -16,45 +12,57 @@ import java.util.stream.Stream;
 public class FileUtils {
 
     /**
-     * Deletes specified directory recursively if directory tree is not deeper than specified maxDepth.
-     * Otherwise a java.nio.{@link java.nio.file.DirectoryNotEmptyException} is thrown.
-     *
-     * @param dir directory to be deleted recursively
-     * @param maxDepth max depth of directory tree that will be deleted
-     * @throws IOException ioException
-     * @throws java.nio.file.DirectoryNotEmptyException if directory tree is deeper than specified maxDepth
+     * Removes directory recursively and silently on JVM shutdown.
+     * @param path directory to be deleted
      */
-    public static void rmDirR(Path dir, int maxDepth) throws IOException {
-        Objects.requireNonNull(dir);
-        if (!Files.exists(dir) || !Files.isDirectory(dir))
-            throw new IllegalArgumentException("Directory not found: " + dir.toAbsolutePath().toString());
-        if (maxDepth < 1)
-            throw new IllegalArgumentException("Method parameter maxDepth must be >= 1. Actually is " + maxDepth);
-
-        Files.walkFileTree(dir, new HashSet<>(), maxDepth, new SimpleFileVisitor<>() {
-
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                Files.delete(file);
-                return FileVisitResult.CONTINUE;
-            }
-
-            @Override
-            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                if (exc == null) {
-                    Files.delete(dir);
-                    return FileVisitResult.CONTINUE;
-                } else {
-                    throw exc;
-                }
-            }
-        });
-
+    public static void forceDeleteOnShutdown(Path path) {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> forceDeleteSilently(path)));
     }
 
-    public static void rmDirR(File dir, int maxDepth) throws IOException {
-        Objects.requireNonNull(dir);
-        rmDirR(dir.toPath(), maxDepth);
+    /**
+     * Performs a force delete if specified path is classified as file or directory. No exceptions are thrown.
+     *
+     * @param path File or directory to be deleted.
+     */
+    public static void forceDeleteSilently(Path path) {
+        try {
+            forceDelete(path);
+        } catch (IOException e) {
+            // din
+        }
+    }
+
+    /**
+     * Deletes file if specified path is a file. Deletes directory recursively is specified path is a
+     * directory.
+     *
+     * @param path File or directory to be deleted.
+     * @throws IOException
+     */
+    public static void forceDelete(Path path) throws IOException {
+        Objects.requireNonNull(path);
+        if (!Files.exists(path) || (!isFileOrDirectory(path)))
+            throw new IllegalArgumentException("No such file or directory: " + path.toAbsolutePath().toString());
+        if (Files.isRegularFile(path)) {
+            Files.delete(path);
+        } else if (Files.isDirectory(path)) {
+            rmDir(path);
+        } else {
+            throw new IllegalArgumentException("No such file or directory: " + path.toAbsolutePath().toString());
+        }
+    }
+
+    public static boolean isFileOrDirectory(Path path) {
+        Objects.requireNonNull(path);
+        return Files.isRegularFile(path) || Files.isDirectory(path);
+    }
+
+    public static void rmDirSilently(Path dir) {
+        try {
+            rmDir(dir);
+        } catch (IOException e) {
+            // din
+        }
     }
 
     /**
@@ -64,7 +72,7 @@ public class FileUtils {
      * @throws IOException ioException
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public static void rmDirR(Path dir) throws IOException {
+    public static void rmDir(Path dir) throws IOException {
         Objects.requireNonNull(dir);
         if (!Files.exists(dir) || !Files.isDirectory(dir))
             throw new IllegalArgumentException("No such directory: " + dir.toAbsolutePath().toString());
@@ -73,11 +81,6 @@ public class FileUtils {
                 .sorted(Comparator.reverseOrder())
                 .map(Path::toFile)
                 .forEach(File::delete);
-    }
-
-    public static void rmDirR(File dir) throws IOException {
-        Objects.requireNonNull(dir);
-        rmDirR(dir.toPath());
     }
 
     /**
