@@ -115,5 +115,25 @@ class SingleValueFileTest {
         assertFalse(Files.exists(path));
     }
 
+    @Test
+    void getPath() {
+        Path path = Paths.get(TEMP_TEST_DIR, "test.txt");
+        SingleValueFile singleValueFile = new SingleValueFile(path);
+        assertEquals(path.toString(), singleValueFile.getPath().toString());
+    }
+
+    @Test
+    void getDefaultCharset() {
+        Path path = Paths.get(TEMP_TEST_DIR, "test.txt");
+        SingleValueFile singleValueFile = new SingleValueFile(path);
+        assertEquals(StandardCharsets.UTF_8, singleValueFile.getCharset());
+    }
+
+    @Test
+    void getSpecifiedCharset() {
+        Path path = Paths.get(TEMP_TEST_DIR, "test.txt");
+        SingleValueFile singleValueFile = new SingleValueFile(path, StandardCharsets.ISO_8859_1);
+        assertEquals(StandardCharsets.ISO_8859_1, singleValueFile.getCharset());
+    }
 
 }

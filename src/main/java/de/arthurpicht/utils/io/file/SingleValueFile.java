@@ -26,6 +26,14 @@ public class SingleValueFile {
         this.charset = charset;
     }
 
+    public Path getPath() {
+        return this.path;
+    }
+
+    public Charset getCharset() {
+        return this.charset;
+    }
+
     public synchronized void write(String string) throws IOException {
         Files.writeString(this.path, string, this.charset, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
     }
