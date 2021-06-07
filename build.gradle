@@ -3,11 +3,10 @@ plugins {
 }
 
 group 'com.github.arthurpicht'
-version '0.0.2-SNAPSHOT'
+version '0.0.2'
 
 repositories {
     mavenCentral()
-    jcenter()
 }
 
 dependencies {
