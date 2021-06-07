@@ -63,5 +63,4 @@ public class SingleValueFile {
         return Files.exists(this.path);
     }
 
-
 }
