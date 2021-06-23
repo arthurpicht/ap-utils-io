@@ -2,6 +2,7 @@ package de.arthurpicht.utils.io.nio2;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 
@@ -127,6 +128,93 @@ class FileUtilsTest {
         } catch (IllegalArgumentException e) {
             assertTrue(e.getMessage().contains("No such directory"));
         }
+    }
+
+    @Test
+    void toCanonicalPath1() {
+        Path path = Paths.get("test.txt");
+        Path canonicalPath = FileUtils.toCanonicalPath(path);
+
+        assertTrue(canonicalPath.isAbsolute());
+        assertFalse(canonicalPath.toString().contentEquals("." + File.separator));
+        assertFalse(canonicalPath.toString().contentEquals(".." + File.separator));
+    }
+
+    @Test
+    void toCanonicalPath2() {
+        Path path = Paths.get("../test.txt");
+        Path canonicalPath = FileUtils.toCanonicalPath(path);
+
+        assertTrue(canonicalPath.isAbsolute());
+        assertFalse(canonicalPath.toString().contentEquals("." + File.separator));
+        assertFalse(canonicalPath.toString().contentEquals(".." + File.separator));
+    }
+
+    @Test
+    void toCanonicalPath3() {
+        Path path = Paths.get("some/../test.txt");
+        Path canonicalPath = FileUtils.toCanonicalPath(path);
+
+        assertTrue(canonicalPath.isAbsolute());
+        assertFalse(canonicalPath.toString().contentEquals("." + File.separator));
+        assertFalse(canonicalPath.toString().contentEquals(".." + File.separator));
+    }
+
+    @Test
+    void toCanonicalPath4() {
+        Path path = Paths.get("/some/../test.txt");
+        Path canonicalPath = FileUtils.toCanonicalPath(path);
+
+        assertTrue(canonicalPath.isAbsolute());
+        assertFalse(canonicalPath.toString().contentEquals("." + File.separator));
+        assertFalse(canonicalPath.toString().contentEquals(".." + File.separator));
+    }
+
+    @Test
+    void toCanonicalPath5() {
+        Path path = Paths.get("./test.txt");
+        Path canonicalPath = FileUtils.toCanonicalPath(path);
+
+        assertTrue(canonicalPath.isAbsolute());
+        assertFalse(canonicalPath.toString().contentEquals("." + File.separator));
+        assertFalse(canonicalPath.toString().contentEquals(".." + File.separator));
+    }
+
+    @Test
+    void getWorkingDir() {
+        Path path = FileUtils.getWorkingDir();
+        assertTrue(path.isAbsolute());
+        assertFalse(path.toString().contentEquals("." + File.separator));
+        assertFalse(path.toString().contentEquals(".." + File.separator));
+        assertEquals("utils-io", path.getFileName().toString());
+    }
+
+    @Test
+    void isChild() {
+        Path reference = FileUtils.getWorkingDir();
+        Path element = Paths.get("some.txt");
+        assertTrue(FileUtils.isChild(reference, element));
+    }
+
+    @Test
+    void isChild_neg() {
+        Path reference = FileUtils.getWorkingDir();
+        Path element = FileUtils.getWorkingDir();
+        assertFalse(FileUtils.isChild(reference, element));
+    }
+
+    @Test
+    void isChild_neg2() {
+        Path reference = Paths.get("/a/b/c");
+        Path element = Paths.get("/a/b/some.txt");
+        assertFalse(FileUtils.isChild(reference, element));
+    }
+
+    @Test
+    void isChild1() {
+        Path reference = Paths.get("/a/b/c");
+        Path element = Paths.get("/a/b/c/some.txt");
+        assertTrue(FileUtils.isChild(reference, element));
     }
 
 }

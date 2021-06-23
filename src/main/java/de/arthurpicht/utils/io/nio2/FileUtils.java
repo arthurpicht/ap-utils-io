@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.Optional;
@@ -120,4 +121,36 @@ public class FileUtils {
         return deepestPath.getNameCount() - path.getNameCount();
     }
 
+    /**
+     * Returns the canonical form of the specified path. A canonical form is absolute and without any './' or '../'.
+     *
+     * @param path path to be expressed in canonical form
+     * @return canonical form of specified path
+     */
+    public static Path toCanonicalPath(Path path) {
+        return path.normalize().toAbsolutePath();
+    }
+
+    /**
+     * Returns the current working directory in a normalized and absolute form (canonical form).
+     *
+     * @return current working directory
+     */
+    public static Path getWorkingDir() {
+        return Paths.get(".").normalize().toAbsolutePath();
+    }
+
+    /**
+     * Determines whether specified path element is a child element of specified reference.
+     *
+     * @param reference
+     * @param element
+     * @return
+     */
+    public static boolean isChild(Path reference, Path element) {
+        Path referenceCanonical = toCanonicalPath(reference);
+        Path elementCanonical = toCanonicalPath(element);
+        if (referenceCanonical.equals(elementCanonical)) return false;
+        return elementCanonical.startsWith(referenceCanonical);
+    }
 }
