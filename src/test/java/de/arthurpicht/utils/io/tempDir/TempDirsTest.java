@@ -26,7 +26,8 @@ class TempDirsTest {
         Path path = Paths.get("testTemp");
 
         TempDir tempDir = TempDirs.createUniqueTempDir(path);
-        assertFalse(tempDir.isAutoClean());
+        assertTrue(tempDir.exists());
+        assertFalse(tempDir.isAutoRemove());
         assertTrue(Files.exists(tempDir.asPath()));
         assertTrue(Files.isDirectory(tempDir.asPath()));
         assertTrue(tempDir.asFile().exists());
@@ -37,8 +38,8 @@ class TempDirsTest {
         assertTrue(Files.exists(tempFile));
         assertTrue(Files.isRegularFile(tempFile));
 
-        tempDir.clean();
-        assertFalse(Files.exists(tempDir.asPath()));
+        tempDir.remove();
+        assertFalse(tempDir.exists());
     }
 
 }

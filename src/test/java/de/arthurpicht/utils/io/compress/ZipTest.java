@@ -1,6 +1,9 @@
 package de.arthurpicht.utils.io.compress;
 
 import de.arthurpicht.utils.io.nio2.FileUtils;
+import de.arthurpicht.utils.io.tempDir.TempDir;
+import de.arthurpicht.utils.io.tempDir.TempDirs;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -9,76 +12,90 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class ZipTest {
 
-    @BeforeAll
-    public static void prepare() {
+    private static TempDir tempDir;
+    private static Path zipDir;
 
+    @BeforeAll
+    public static void prepare() throws IOException {
+        tempDir = TempDirs.createUniqueTempDir(Paths.get("testTemp"));
+        zipDir = tempDir.asPath().resolve("testMaterial/zip");
+        Path aDir = Files.createDirectories(zipDir.resolve("a"));
+        Path bDir = Files.createDirectories(zipDir.resolve("b"));
+        Files.createDirectories(zipDir.resolve("c"));
+        Files.writeString(zipDir.resolve("test1.txt"), "content of test1.txt");
+        Files.writeString(aDir.resolve("test_a.txt"), "content of test_a.txt");
+        Files.writeString(bDir.resolve("test_b.txt"), "content of test_b.txt");
+    }
+
+    @AfterAll
+    public static void cleanup() {
+        tempDir.remove();
     }
 
     @Test
     public void testZipWithRootDir() throws IOException {
-        Path source = Paths.get("testMaterial/zip");
-        assertTrue(Files.exists(source));
+        if (!Files.exists(zipDir)) throw new IllegalStateException("TempDir not existing.");
 
-        Path destination = Paths.get("testTemp/testZipDir.zip");
+        Path source = zipDir;
+        Path destination = tempDir.asPath().resolve("testZipDir.zip");
         if (Files.exists(destination)) Files.delete(destination);
-        assertTrue(Files.exists(destination.getParent()), "prepare test");
-        assertFalse(Files.exists(destination), "prepare test");
 
         Zip.zip(source, destination, true);
 
         List<? extends ZipEntry> zipEntryList = Zip.getZipEntryList(destination);
         assertEquals(7, zipEntryList.size());
-        assertEquals("zip/", zipEntryList.get(0).getName());
-        assertEquals("zip/a/", zipEntryList.get(1).getName());
-        assertEquals("zip/a/test_a.txt", zipEntryList.get(2).getName());
-        assertEquals("zip/b/", zipEntryList.get(3).getName());
-        assertEquals("zip/b/test_b.txt", zipEntryList.get(4).getName());
-        assertEquals("zip/test1.txt", zipEntryList.get(5).getName());
-        assertEquals("zip/c/", zipEntryList.get(6).getName());
+
+        Set<String> entryNames = Zip.getZipEntryNames(destination);
+        assertTrue(entryNames.contains("zip/"));
+        assertTrue(entryNames.contains("zip/a/"));
+        assertTrue(entryNames.contains("zip/a/test_a.txt"));
+        assertTrue(entryNames.contains("zip/b/"));
+        assertTrue(entryNames.contains("zip/b/test_b.txt"));
+        assertTrue(entryNames.contains("zip/test1.txt"));
+        assertTrue(entryNames.contains("zip/c/"));
 
         Files.delete(destination);
     }
 
     @Test
     public void testZipWithoutRootDir() throws IOException {
-        Path source = Paths.get("testMaterial/zip");
-        assertTrue(Files.exists(source), "prepare test");
+        if (!Files.exists(zipDir)) throw new IllegalStateException("TempDir not existing.");
 
-        Path destination = Paths.get("testTemp/testZipWithoutDir.zip");
+        Path source = zipDir;
+        Path destination = tempDir.asPath().resolve("testZipWithoutDir.zip");
         if (Files.exists(destination)) Files.delete(destination);
-        assertTrue(Files.exists(destination.getParent()), "prepare test");
-        assertFalse(Files.exists(destination), "prepare test");
 
         Zip.zip(source, destination, false);
 
         List<? extends ZipEntry> zipEntryList = Zip.getZipEntryList(destination);
         assertEquals(7, zipEntryList.size());
-        assertEquals("/", zipEntryList.get(0).getName());
-        assertEquals("a/", zipEntryList.get(1).getName());
-        assertEquals("a/test_a.txt", zipEntryList.get(2).getName());
-        assertEquals("b/", zipEntryList.get(3).getName());
-        assertEquals("b/test_b.txt", zipEntryList.get(4).getName());
-        assertEquals("test1.txt", zipEntryList.get(5).getName());
-        assertEquals("c/", zipEntryList.get(6).getName());
+
+        Set<String> zipEntryNames = Zip.getZipEntryNames(destination);
+        assertTrue(zipEntryNames.contains("/"));
+        assertTrue(zipEntryNames.contains("a/"));
+        assertTrue(zipEntryNames.contains("a/test_a.txt"));
+        assertTrue(zipEntryNames.contains("b/"));
+        assertTrue(zipEntryNames.contains("b/test_b.txt"));
+        assertTrue(zipEntryNames.contains("test1.txt"));
+        assertTrue(zipEntryNames.contains("c/"));
 
         Files.delete(destination);
     }
 
     @Test
     public void testZipSingleFile() throws IOException {
-        Path source = Paths.get("testMaterial/zip/test1.txt");
-        assertTrue(Files.exists(source), "prepare test");
+        Path source = zipDir.resolve("test1.txt");
+        if (!Files.exists(source)) throw new IllegalStateException(source.toAbsolutePath() + " not found.");
 
-        Path destination = Paths.get("testTemp/testZipSingle.zip");
+        Path destination = tempDir.asPath().resolve("testZipSingle.zip");
         if (Files.exists(destination)) Files.delete(destination);
-        assertTrue(Files.exists(destination.getParent()), "prepare test");
-        assertFalse(Files.exists(destination), "prepare test");
 
         Zip.zip(source, destination, false);
 
@@ -91,18 +108,15 @@ class ZipTest {
 
     @Test
     public void testUnzip() throws IOException {
+        Path source = zipDir;
+        if (!Files.exists(zipDir)) throw new IllegalStateException(source.toAbsolutePath() + " not found.");
 
-        Path source = Paths.get("testMaterial/zip");
-        assertTrue(Files.exists(source), "prepareTest");
-
-        Path zipFile = Paths.get("testTemp/testZipDir.zip");
+        Path zipFile = tempDir.asPath().resolve("testZipDir.zip");
         if (Files.exists(zipFile)) Files.delete(zipFile);
-        assertTrue(Files.exists(zipFile.getParent()), "prepare test");
-        assertFalse(Files.exists(zipFile), "prepare test");
 
         Zip.zip(source, zipFile, true);
 
-        Path unzipDestination = Files.createDirectories(zipFile.getParent().resolve("unzip"));
+        Path unzipDestination = tempDir.asPath().resolve("unzip");
 
         Zip.unzip(zipFile, unzipDestination);
 

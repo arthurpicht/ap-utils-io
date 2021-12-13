@@ -1,133 +1,146 @@
 package de.arthurpicht.utils.io.nio2;
 
+import de.arthurpicht.utils.io.tempDir.TempDir;
+import de.arthurpicht.utils.io.tempDir.TempDirs;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class FileUtilsTest {
 
+    private static final String PROJECT_TEMP_DIR = "testTemp";
+
+    private static Path rootOfTree;
+
+    @BeforeAll
+    public static void setUp() throws IOException {
+        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+        Path rootOfTree = tempDir.asPath().resolve("rootOfTree");
+        Path level_1 = Files.createDirectories(rootOfTree.resolve("level_1"));
+        Files.createFile(level_1.resolve("file_1__1.txt"));
+        Path level_1_1_1 = Files.createDirectories(rootOfTree.resolve("level_1/level_1_1/level_1_1_1"));
+        Files.createFile(level_1_1_1.resolve("file_1_1_1__1.txt"));
+        Path level_1_2_1 = Files.createDirectories(rootOfTree.resolve("level_1/level_1_2/level_1_2_1"));
+        Files.createFile(level_1_2_1.resolve("file_1_2_1__1.txt"));
+        Path level_1_2_1_1 = Files.createDirectories(rootOfTree.resolve("level_1/level_1_2/level_1_2_1/level_1_2_1_1"));
+        Files.createFile(level_1_2_1_1.resolve("file_1_2_1_1__1.txt"));
+        Path level_1_3 = Files.createDirectories(rootOfTree.resolve("level_1/level_3"));
+        Files.createFile(level_1_3.resolve("file_1_3__1.txt"));
+        FileUtilsTest.rootOfTree = rootOfTree;
+    }
+
     @Test
     void rmDirR() throws IOException {
-        try {
-            Files.createDirectories(Paths.get("testTemp/a/b/c"));
-            Files.createFile(Paths.get("testTemp/a/file_a.txt"));
-            Files.createFile(Paths.get("testTemp/a/b/c/file_c.txt"));
-        } catch (FileAlreadyExistsException e) {
-            // din
-        }
+        Path tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR).asPath();
 
-        Path path = Paths.get("testTemp/a");
+        Files.createDirectories(tempDir.resolve("a/b/c"));
+        Files.createFile(tempDir.resolve("a/file_a.txt"));
+        Files.createFile(tempDir.resolve("a/b/c/file_c.txt"));
+
+
+        Path path = tempDir.resolve("a");
         assertTrue(Files.exists(path));
         FileUtils.rmDir(path);
         assertFalse(Files.exists(path));
     }
 
     @Test
-    void rmDirR_notExisting_neg() throws IOException {
-        Path path = Paths.get("testTemp/not_existing");
-        assertFalse(Files.exists(path));
-        try {
-            FileUtils.rmDir(path);
-            fail(IllegalArgumentException.class.getSimpleName() + " expected.");
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("No such directory"));
-        }
+    void rmDirR_notExisting_neg() {
+        Path noPath = Paths.get(UUID.randomUUID().toString());
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> FileUtils.rmDir(noPath));
+        assertTrue(e.getMessage().contains("No such directory"));
     }
 
     @Test
     void rmDirR_noDir_neg() throws IOException {
-        Path path = Paths.get("testTemp/testFile.txt");
-        Files.createFile(path);
-        assertTrue(Files.exists(path));
-        try {
-            FileUtils.rmDir(path);
-            fail(IllegalArgumentException.class.getSimpleName() + " expected.");
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("No such directory"));
-        }
-        Files.delete(path);
-        assertFalse(Files.exists(path));
+        // prepare
+        Path tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR).asPath();
+        Path file = tempDir.resolve("testFile.txt");
+        Files.createFile(file);
+        assertTrue(Files.exists(file));
+        // test
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> FileUtils.rmDir(file));
+        assertTrue(e.getMessage().contains("No such directory"));
     }
 
     @Test
     void findDeepest1() throws IOException {
-        Path deepest = FileUtils.findDeepest(Paths.get("testMaterial"));
-        assertEquals("testMaterial/level1/level1_2/level1_2_1/level1_2_1_1", deepest.toString());
+        Path deepest = FileUtils.findDeepest(rootOfTree);
+        assertEquals(7, deepest.getNameCount());
+        Path deepestSubpath = deepest.subpath(2, deepest.getNameCount());
+        assertEquals("rootOfTree/level_1/level_1_2/level_1_2_1/level_1_2_1_1", deepestSubpath.toString());
     }
 
     @Test
     void findDeepest2() throws IOException {
-        Path deepest = FileUtils.findDeepest(Paths.get("testMaterial/level1/level1_2/level1_2_1/level1_2_1_1"));
-        assertEquals("testMaterial/level1/level1_2/level1_2_1/level1_2_1_1", deepest.toString());
+        Path queryPath = rootOfTree.resolve("level_1/level_1_2/level_1_2_1/level_1_2_1_1");
+        Path deepest = FileUtils.findDeepest(queryPath);
+        assertEquals(7, deepest.getNameCount());
+        Path deepestSubpath = deepest.subpath(2, deepest.getNameCount());
+        assertEquals("rootOfTree/level_1/level_1_2/level_1_2_1/level_1_2_1_1", deepestSubpath.toString());
     }
 
     @Test
-    void findDeepest_notExisting_neg() throws IOException {
-        try {
-            FileUtils.findDeepest(Paths.get("testMaterial/notExisting"));
-            fail(IllegalArgumentException.class.getSimpleName() + " expected.");
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("No such directory"));
-        }
+    void findDeepest_notExisting_neg() {
+        Path noPath = Paths.get(UUID.randomUUID().toString());
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> FileUtils.findDeepest(noPath));
+        assertTrue(e.getMessage().contains("No such directory"));
     }
 
     @Test
-    void findDeepest_noDirectory_neg() throws IOException {
-        try {
-            FileUtils.findDeepest(Paths.get("testMaterial/level1/level1_2/level1_2_1/file1_2_1__1.txt"));
-            fail(IllegalArgumentException.class.getSimpleName() + " expected.");
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("No such directory"));
-        }
+    void findDeepest_noDirectory_neg() {
+        Path existingFile = rootOfTree.resolve("level_1/level_1_2/level_1_2_1/file_1_2_1__1.txt");
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> FileUtils.findDeepest(existingFile));
+        assertTrue(e.getMessage().contains("No such directory"));
     }
-
 
     @Test
     void getDepthLeaf() throws IOException {
-        int depth = FileUtils.getDepth(Paths.get("testMaterial/level1/level1_2/level1_2_1/level1_2_1_1"));
+        Path deepestLeaf = rootOfTree.resolve("level_1/level_1_2/level_1_2_1/level_1_2_1_1");
+        int depth = FileUtils.getDepth(deepestLeaf);
         assertEquals(0, depth);
     }
 
     @Test
     void getDepthLeafMinusOne() throws IOException {
-        int depth = FileUtils.getDepth(Paths.get("testMaterial/level1/level1_2/level1_2_1"));
+        Path parentOfDeepestLeaf = rootOfTree.resolve("level_1/level_1_2/level_1_2_1");
+        int depth = FileUtils.getDepth(parentOfDeepestLeaf);
         assertEquals(1, depth);
     }
 
     @Test
     void getDepthLeafMinusTwo() throws IOException {
-        int depth = FileUtils.getDepth(Paths.get("testMaterial/level1/level1_2"));
+        Path deepestLeafMinusTwo = rootOfTree.resolve("level_1/level_1_2");
+        int depth = FileUtils.getDepth(deepestLeafMinusTwo);
         assertEquals(2, depth);
     }
 
     @Test
     void getDepthLeafMinusFour() throws IOException {
-        int depth = FileUtils.getDepth(Paths.get("testMaterial"));
+        int depth = FileUtils.getDepth(rootOfTree);
         assertEquals(4, depth);
     }
 
     @Test
-    void getDepth_notExisting_neg() throws IOException {
-        try {
-            FileUtils.getDepth(Paths.get("testMaterial/notExisting"));
-            fail(IllegalArgumentException.class.getSimpleName() + " expected.");
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("No such directory"));
-        }
+    void getDepth_notExisting_neg() {
+        Path noPath = Paths.get(UUID.randomUUID().toString());
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> FileUtils.getDepth(noPath));
+        assertTrue(e.getMessage().contains("No such directory"));
     }
 
     @Test
-    void getDepth_noDirectory_neg() throws IOException {
-        try {
-            FileUtils.getDepth(Paths.get("testMaterial/level1/level1_2/level1_2_1/file1_2_1__1.txt"));
-            fail(IllegalArgumentException.class.getSimpleName() + " expected.");
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("No such directory"));
-        }
+    void getDepth_noDirectory_neg() {
+        Path existingFile = rootOfTree.resolve("level_1/level_1_2/level_1_2_1/file_1_2_1__1.txt");
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> FileUtils.getDepth(existingFile));
+        assertTrue(e.getMessage().contains("No such directory"));
     }
 
     @Test

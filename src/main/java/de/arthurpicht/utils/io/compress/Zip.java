@@ -10,6 +10,8 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
@@ -100,6 +102,13 @@ public class Zip {
 
         ZipFile zipFile = new ZipFile(zipPath.toFile());
         return Collections.list(zipFile.entries());
+    }
+
+    public static Set<String> getZipEntryNames(Path zipPath) throws IOException {
+        List<? extends ZipEntry> zipEntryList = getZipEntryList(zipPath);
+        return zipEntryList.stream()
+                .map(ZipEntry::getName)
+                .collect(Collectors.toSet());
     }
 
     /**
