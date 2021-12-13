@@ -1,6 +1,7 @@
 package de.arthurpicht.utils.io.compress;
 
 import de.arthurpicht.utils.io.nio2.FileUtils;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -13,6 +14,11 @@ import java.util.zip.ZipEntry;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ZipTest {
+
+    @BeforeAll
+    public static void prepare() {
+
+    }
 
     @Test
     public void testZipWithRootDir() throws IOException {
