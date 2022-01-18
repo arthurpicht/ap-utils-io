@@ -34,7 +34,7 @@ public class FileUtils {
     }
 
     /**
-     * Deletes file if specified path is a file. Deletes directory recursively is specified path is a
+     * Deletes file if specified path is a file. Deletes directory recursively if specified path is a
      * directory.
      *
      * @param path File or directory to be deleted.
@@ -76,7 +76,7 @@ public class FileUtils {
     public static void rmDir(Path dir) throws IOException {
         Objects.requireNonNull(dir);
         if (!Files.exists(dir) || !Files.isDirectory(dir))
-            throw new IllegalArgumentException("No such directory: " + dir.toAbsolutePath().toString());
+            throw new IllegalArgumentException("No such directory: " + dir.toAbsolutePath());
 
         Files.walk(dir)
                 .sorted(Comparator.reverseOrder())

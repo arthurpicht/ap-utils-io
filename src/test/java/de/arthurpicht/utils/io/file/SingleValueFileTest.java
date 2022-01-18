@@ -136,4 +136,93 @@ class SingleValueFileTest {
         assertEquals(StandardCharsets.ISO_8859_1, singleValueFile.getCharset());
     }
 
+    @Test
+    void hasContent() throws IOException {
+        Path path = Paths.get(TEMP_TEST_DIR, "test.txt");
+        SingleValueFile singleValueFile = new SingleValueFile(path);
+        singleValueFile.write("test");
+        assertTrue(singleValueFile.hasContent());
+
+        singleValueFile.delete();
+    }
+
+    @Test
+    void hasContentNeg() throws IOException {
+        Path path = Paths.get(TEMP_TEST_DIR, "test.txt");
+        SingleValueFile singleValueFile = new SingleValueFile(path);
+        singleValueFile.write("");
+
+        assertTrue(singleValueFile.exists());
+        assertFalse(singleValueFile.hasContent());
+
+        singleValueFile.delete();
+    }
+
+    @Test
+    void isEvaluable() throws IOException {
+        Path path = Paths.get(TEMP_TEST_DIR, "test.txt");
+        SingleValueFile singleValueFile = new SingleValueFile(path);
+        singleValueFile.write("test");
+
+        assertTrue(singleValueFile.isEvaluable());
+
+        singleValueFile.delete();
+    }
+
+    @Test
+    void isEvaluableNeg_empty() throws IOException {
+        Path path = Paths.get(TEMP_TEST_DIR, "test.txt");
+        SingleValueFile singleValueFile = new SingleValueFile(path);
+        singleValueFile.write("");
+
+        assertFalse(singleValueFile.isEvaluable());
+
+        singleValueFile.delete();
+    }
+
+    @Test
+    void isEvaluableNeg_notExisting() throws IOException {
+        Path path = Paths.get(TEMP_TEST_DIR, "notExisting.txt");
+        SingleValueFile singleValueFile = new SingleValueFile(path);
+
+        assertFalse(singleValueFile.isEvaluable());
+    }
+
+    @Test
+    void readFirstLine() throws IOException {
+        Path path = Paths.get(TEMP_TEST_DIR, "test.txt");
+        SingleValueFile singleValueFile = new SingleValueFile(path);
+        singleValueFile.write("test");
+
+        String firstLine = singleValueFile.readFirstLine();
+        assertEquals("test", firstLine);
+
+        singleValueFile.delete();
+    }
+
+    @Test
+    void readFirstLine_whiteSpace() throws IOException {
+        Path path = Paths.get(TEMP_TEST_DIR, "test.txt");
+        SingleValueFile singleValueFile = new SingleValueFile(path);
+        singleValueFile.write("test\n");
+
+        String firstLine = singleValueFile.readFirstLine();
+        assertEquals("test", firstLine);
+
+        singleValueFile.delete();
+    }
+
+    @Test
+    void readFirstLine_multiLine() throws IOException {
+        Path path = Paths.get(TEMP_TEST_DIR, "test.txt");
+        SingleValueFile singleValueFile = new SingleValueFile(path);
+        singleValueFile.write("test\ntest2");
+
+        String firstLine = singleValueFile.readFirstLine();
+        assertEquals("test", firstLine);
+
+        singleValueFile.delete();
+    }
+
+
 }

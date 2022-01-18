@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.List;
 
 /**
  * Simple functionality for reading and writing a string to/from a file.
@@ -40,7 +41,7 @@ public class SingleValueFile {
 
     /**
      * Returns content from file as string. Existence of file is a precondition.
-     * If checking for file existence and reading can not be performed as an thread save (atomic) operation,
+     * If checking for file existence and reading can not be performed as a thread save (atomic) operation,
      * catch IllegalStateException.
      *
      * @return content from file as String.
@@ -50,6 +51,21 @@ public class SingleValueFile {
     public synchronized String read() throws IOException {
         if (!exists()) throw new IllegalStateException("No such file to read from: " + this.path.toString());
         return Files.readString(this.path, this.charset);
+    }
+
+    /**
+     * Returns the first line of file as string. This is useful if you want to get the first line only without
+     * any trailing white space.
+     *
+     * @return first line from file
+     * @throws IOException
+     */
+    @SuppressWarnings("JavaDoc")
+    public synchronized String readFirstLine() throws IOException {
+        if (!exists()) throw new IllegalStateException("No such file to read from: " + this.path.toString());
+        if (!hasContent()) throw new IllegalStateException("File is empty: " + this.path.toString());
+        List<String> lines = Files.readAllLines(this.path, this.charset);
+        return lines.get(0);
     }
 
     /**
@@ -69,6 +85,15 @@ public class SingleValueFile {
 
     public synchronized boolean exists() {
         return Files.exists(this.path);
+    }
+
+    public synchronized boolean hasContent() throws IOException {
+        if (!exists()) throw new IllegalStateException("No such file: " + this.path.toString());
+        return Files.size(this.path) > 0;
+    }
+
+    public synchronized boolean isEvaluable() throws IOException {
+        return exists() && hasContent();
     }
 
 }
