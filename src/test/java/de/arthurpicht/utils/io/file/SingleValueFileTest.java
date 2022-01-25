@@ -1,5 +1,7 @@
 package de.arthurpicht.utils.io.file;
 
+import de.arthurpicht.utils.io.tempDir.TempDir;
+import de.arthurpicht.utils.io.tempDir.TempDirs;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -8,33 +10,29 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class SingleValueFileTest {
 
-    // If a test fails, delete TEMP_TEST_DIR and all its content before rerunning!
-
-    private static final String TEMP_TEST_DIR = "tempTest";
+    private static final String TEMP_TEST_DIR = "testTemp";
+    private static TempDir tempDir;
 
     @BeforeAll
     static void createTempDir() throws IOException {
-        if (!Files.exists(Paths.get(TEMP_TEST_DIR))) {
-            Files.createDirectory(Paths.get(TEMP_TEST_DIR));
-        }
+        tempDir = TempDirs.createUniqueTempDir(TEMP_TEST_DIR);
     }
 
     @AfterAll
-    static void deleteTempDir() throws IOException {
-        Files.deleteIfExists(Paths.get(TEMP_TEST_DIR));
+    static void deleteTempDir() {
+        tempDir.remove();
     }
 
     @Test
     void simple() throws IOException {
 
         String test = "test";
-        Path path = Paths.get(TEMP_TEST_DIR, "test.txt");
+        Path path = tempDir.asPath().resolve("simple.txt");
 
         SingleValueFile singleValueFile = new SingleValueFile(path);
         singleValueFile.write(test);
@@ -47,10 +45,41 @@ class SingleValueFileTest {
     }
 
     @Test
+    void twoLines() throws IOException {
+        String content = "test\nsecondLine";
+        Path path = tempDir.asPath().resolve("testTwoLines.txt");
+
+        SingleValueFile singleValueFile = new SingleValueFile(path);
+        singleValueFile.write(content);
+
+        String value = singleValueFile.read();
+        assertEquals("test", value);
+
+        singleValueFile.delete();
+        assertFalse(Files.exists(path));
+    }
+
+    @Test
+    void trailingNewline() throws IOException {
+        String content = "test\n";
+        Path path = tempDir.asPath().resolve("testTwoLines.txt");
+
+        SingleValueFile singleValueFile = new SingleValueFile(path);
+        singleValueFile.write(content);
+
+        String value = singleValueFile.read();
+        assertEquals("test", value);
+
+        singleValueFile.delete();
+        assertFalse(Files.exists(path));
+    }
+
+
+    @Test
     void rewrite() throws IOException {
 
         String test = "test";
-        Path path = Paths.get(TEMP_TEST_DIR, "test2.txt");
+        Path path = tempDir.asPath().resolve("rewrite.txt");
 
         SingleValueFile singleValueFile = new SingleValueFile(path);
         singleValueFile.write("0000000000000");
@@ -65,7 +94,7 @@ class SingleValueFileTest {
 
     @Test
     void exists() throws IOException {
-        Path path = Paths.get(TEMP_TEST_DIR, "exist.txt");
+        Path path = tempDir.asPath().resolve("exists.txt");
         SingleValueFile singleValueFile = new SingleValueFile(path);
         assertFalse(singleValueFile.exists());
         singleValueFile.write("something");
@@ -76,7 +105,7 @@ class SingleValueFileTest {
 
     @Test
     void readFromNonExistingFile() throws IOException {
-        Path path = Paths.get(TEMP_TEST_DIR, "not_existing.txt");
+        Path path = tempDir.asPath().resolve("not_existing.txt");
         SingleValueFile singleValueFile = new SingleValueFile(path);
         try {
             singleValueFile.read();
@@ -90,7 +119,7 @@ class SingleValueFileTest {
     void simpleISO() throws IOException {
         //noinspection SpellCheckingInspection
         String test = "testöäü";
-        Path path = Paths.get(TEMP_TEST_DIR, "test.txt");
+        Path path = tempDir.asPath().resolve("simpleISO.txt");
 
         SingleValueFile singleValueFile = new SingleValueFile(path, StandardCharsets.ISO_8859_1);
         singleValueFile.write(test);
@@ -105,7 +134,7 @@ class SingleValueFileTest {
     @Test
     void deleteIfExists() throws IOException {
         String test = "test";
-        Path path = Paths.get(TEMP_TEST_DIR, "test.txt");
+        Path path = tempDir.asPath().resolve("deleteIfExists.txt");
 
         SingleValueFile singleValueFile = new SingleValueFile(path, StandardCharsets.ISO_8859_1);
         singleValueFile.write(test);
@@ -117,28 +146,28 @@ class SingleValueFileTest {
 
     @Test
     void getPath() {
-        Path path = Paths.get(TEMP_TEST_DIR, "test.txt");
+        Path path = tempDir.asPath().resolve("testGetPath.txt");
         SingleValueFile singleValueFile = new SingleValueFile(path);
         assertEquals(path.toString(), singleValueFile.getPath().toString());
     }
 
     @Test
     void getDefaultCharset() {
-        Path path = Paths.get(TEMP_TEST_DIR, "test.txt");
+        Path path = tempDir.asPath().resolve("testGetDefaultCharset.txt");
         SingleValueFile singleValueFile = new SingleValueFile(path);
         assertEquals(StandardCharsets.UTF_8, singleValueFile.getCharset());
     }
 
     @Test
     void getSpecifiedCharset() {
-        Path path = Paths.get(TEMP_TEST_DIR, "test.txt");
+        Path path = tempDir.asPath().resolve("testGetSpecifiedCharste.txt");
         SingleValueFile singleValueFile = new SingleValueFile(path, StandardCharsets.ISO_8859_1);
         assertEquals(StandardCharsets.ISO_8859_1, singleValueFile.getCharset());
     }
 
     @Test
     void hasContent() throws IOException {
-        Path path = Paths.get(TEMP_TEST_DIR, "test.txt");
+        Path path = tempDir.asPath().resolve("testHasContent.txt");
         SingleValueFile singleValueFile = new SingleValueFile(path);
         singleValueFile.write("test");
         assertTrue(singleValueFile.hasContent());
@@ -148,7 +177,7 @@ class SingleValueFileTest {
 
     @Test
     void hasContentNeg() throws IOException {
-        Path path = Paths.get(TEMP_TEST_DIR, "test.txt");
+        Path path = tempDir.asPath().resolve("testHasContentNeg.txt");
         SingleValueFile singleValueFile = new SingleValueFile(path);
         singleValueFile.write("");
 
@@ -157,72 +186,5 @@ class SingleValueFileTest {
 
         singleValueFile.delete();
     }
-
-    @Test
-    void isEvaluable() throws IOException {
-        Path path = Paths.get(TEMP_TEST_DIR, "test.txt");
-        SingleValueFile singleValueFile = new SingleValueFile(path);
-        singleValueFile.write("test");
-
-        assertTrue(singleValueFile.isEvaluable());
-
-        singleValueFile.delete();
-    }
-
-    @Test
-    void isEvaluableNeg_empty() throws IOException {
-        Path path = Paths.get(TEMP_TEST_DIR, "test.txt");
-        SingleValueFile singleValueFile = new SingleValueFile(path);
-        singleValueFile.write("");
-
-        assertFalse(singleValueFile.isEvaluable());
-
-        singleValueFile.delete();
-    }
-
-    @Test
-    void isEvaluableNeg_notExisting() throws IOException {
-        Path path = Paths.get(TEMP_TEST_DIR, "notExisting.txt");
-        SingleValueFile singleValueFile = new SingleValueFile(path);
-
-        assertFalse(singleValueFile.isEvaluable());
-    }
-
-    @Test
-    void readFirstLine() throws IOException {
-        Path path = Paths.get(TEMP_TEST_DIR, "test.txt");
-        SingleValueFile singleValueFile = new SingleValueFile(path);
-        singleValueFile.write("test");
-
-        String firstLine = singleValueFile.readFirstLine();
-        assertEquals("test", firstLine);
-
-        singleValueFile.delete();
-    }
-
-    @Test
-    void readFirstLine_whiteSpace() throws IOException {
-        Path path = Paths.get(TEMP_TEST_DIR, "test.txt");
-        SingleValueFile singleValueFile = new SingleValueFile(path);
-        singleValueFile.write("test\n");
-
-        String firstLine = singleValueFile.readFirstLine();
-        assertEquals("test", firstLine);
-
-        singleValueFile.delete();
-    }
-
-    @Test
-    void readFirstLine_multiLine() throws IOException {
-        Path path = Paths.get(TEMP_TEST_DIR, "test.txt");
-        SingleValueFile singleValueFile = new SingleValueFile(path);
-        singleValueFile.write("test\ntest2");
-
-        String firstLine = singleValueFile.readFirstLine();
-        assertEquals("test", firstLine);
-
-        singleValueFile.delete();
-    }
-
 
 }

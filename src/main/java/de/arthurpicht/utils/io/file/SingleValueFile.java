@@ -1,5 +1,8 @@
 package de.arthurpicht.utils.io.file;
 
+import de.arthurpicht.utils.core.assertion.AssertMethodPrecondition;
+import de.arthurpicht.utils.core.strings.Strings;
+
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -9,7 +12,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.List;
 
 /**
- * Simple functionality for reading and writing a string to/from a file.
+ * Simple functionality for reading and writing a string value to/from a file.
  * Implementation is thread save. Existence of parent directory is assumed.
  */
 public class SingleValueFile {
@@ -35,14 +38,25 @@ public class SingleValueFile {
         return this.charset;
     }
 
+    /**
+     * Writes specified string to file. If specified string contains more than one line, then the first line is written
+     * only.
+     *
+     * @param string
+     * @throws IOException
+     */
     public synchronized void write(String string) throws IOException {
-        Files.writeString(this.path, string, this.charset, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+        AssertMethodPrecondition.parameterNotNull("string", string);
+
+        String value = Strings.getFirstLine(string);
+        Files.writeString(this.path, value, this.charset, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
     }
 
     /**
-     * Returns content from file as string. Existence of file is a precondition.
+     * Returns content from file as string. Existence of file is a precondition. If file contains more than one line,
+     * only the first line is returned.
      * If checking for file existence and reading can not be performed as a thread save (atomic) operation,
-     * catch IllegalStateException.
+     * then catch IllegalStateException.
      *
      * @return content from file as String.
      * @throws IOException
@@ -50,22 +64,8 @@ public class SingleValueFile {
     @SuppressWarnings("JavaDoc")
     public synchronized String read() throws IOException {
         if (!exists()) throw new IllegalStateException("No such file to read from: " + this.path.toString());
-        return Files.readString(this.path, this.charset);
-    }
-
-    /**
-     * Returns the first line of file as string. This is useful if you want to get the first line only without
-     * any trailing white space.
-     *
-     * @return first line from file
-     * @throws IOException
-     */
-    @SuppressWarnings("JavaDoc")
-    public synchronized String readFirstLine() throws IOException {
-        if (!exists()) throw new IllegalStateException("No such file to read from: " + this.path.toString());
-        if (!hasContent()) throw new IllegalStateException("File is empty: " + this.path.toString());
-        List<String> lines = Files.readAllLines(this.path, this.charset);
-        return lines.get(0);
+        String content = Files.readString(this.path, this.charset);
+        return Strings.getFirstLine(content);
     }
 
     /**
@@ -79,21 +79,33 @@ public class SingleValueFile {
         Files.delete(this.path);
     }
 
+    /**
+     * Deletes file if existing.
+     *
+     * @throws IOException
+     */
     public synchronized void deleteIfExists() throws IOException {
         Files.deleteIfExists(this.path);
     }
 
+    /**
+     * Checks is file exists.
+     *
+     * @return
+     */
     public synchronized boolean exists() {
         return Files.exists(this.path);
     }
 
+    /**
+     * Checks if file has content.
+     *
+     * @return
+     * @throws IOException
+     */
     public synchronized boolean hasContent() throws IOException {
         if (!exists()) throw new IllegalStateException("No such file: " + this.path.toString());
         return Files.size(this.path) > 0;
-    }
-
-    public synchronized boolean isEvaluable() throws IOException {
-        return exists() && hasContent();
     }
 
 }
