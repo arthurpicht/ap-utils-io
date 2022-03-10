@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'com.github.arthurpicht'
-version '0.0.8'
+version '0.0.9'
 
 repositories {
     maven { url "https://jitpack.io" }
@@ -11,7 +11,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.arthurpicht:utils-core:1.6.0'
+    implementation 'com.github.arthurpicht:utils-core:1.8.0'
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'

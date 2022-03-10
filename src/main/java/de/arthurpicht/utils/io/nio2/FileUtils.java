@@ -1,5 +1,7 @@
 package de.arthurpicht.utils.io.nio2;
 
+import de.arthurpicht.utils.core.assertion.MethodPreconditions;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -9,6 +11,8 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
+
+import static de.arthurpicht.utils.core.assertion.MethodPreconditions.assertArgumentNotNull;
 
 public class FileUtils {
 
@@ -56,6 +60,16 @@ public class FileUtils {
     public static boolean isFileOrDirectory(Path path) {
         Objects.requireNonNull(path);
         return Files.isRegularFile(path) || Files.isDirectory(path);
+    }
+
+    public static boolean isExistingDirectory(Path path) {
+        assertArgumentNotNull("path", path);
+        return Files.exists(path) && Files.isDirectory(path);
+    }
+
+    public static boolean isExistingRegularFile(Path path) {
+        assertArgumentNotNull("path", path);
+        return Files.exists(path) && Files.isRegularFile(path);
     }
 
     public static void rmDirSilently(Path dir) {
