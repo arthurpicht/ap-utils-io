@@ -1,12 +1,9 @@
 package de.arthurpicht.utils.io.nio2;
 
-import de.arthurpicht.utils.core.assertion.MethodPreconditions;
-
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.Optional;
@@ -167,4 +164,40 @@ public class FileUtils {
         if (referenceCanonical.equals(elementCanonical)) return false;
         return elementCanonical.startsWith(referenceCanonical);
     }
+
+    /**
+     * Recursively copies the specified source directory to specified destination directory. If the destination
+     * directory is not preexisting then it will be created.<br>
+     * Examples:<br>
+     * After copying a/b/c to x/y/c you will find a copy of c as a subdirectory of x/y/.<br>
+     * After copying a/b/c to x/y/z you will find a copy of c as z.
+     *
+     * @param source
+     * @param destination
+     * @param options
+     * @throws IOException
+     */
+    public static void copyDirectory(Path source, Path destination, CopyOption... options) throws IOException {
+        assertArgumentNotNull("source", source);
+        assertArgumentNotNull("destination", destination);
+        if (!FileUtils.isExistingDirectory(source))
+            throw new IllegalArgumentException("Source directory not found: [" + source.toAbsolutePath() + "].");
+
+        Files.walkFileTree(source, new SimpleFileVisitor<>() {
+
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attributes) throws IOException {
+                Files.createDirectories(destination.resolve(source.relativize(dir)));
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attributes) throws IOException {
+                Files.copy(file, destination.resolve(source.relativize(file)), options);
+                return FileVisitResult.CONTINUE;
+            }
+        });
+    }
+
+
 }

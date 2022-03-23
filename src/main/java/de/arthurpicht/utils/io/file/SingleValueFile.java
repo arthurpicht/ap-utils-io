@@ -1,6 +1,6 @@
 package de.arthurpicht.utils.io.file;
 
-import de.arthurpicht.utils.core.assertion.AssertMethodPrecondition;
+import de.arthurpicht.utils.core.assertion.MethodPreconditions;
 import de.arthurpicht.utils.core.strings.Strings;
 
 import java.io.IOException;
@@ -9,7 +9,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.List;
 
 /**
  * Simple functionality for reading and writing a string value to/from a file.
@@ -46,7 +45,7 @@ public class SingleValueFile {
      * @throws IOException
      */
     public synchronized void write(String string) throws IOException {
-        AssertMethodPrecondition.parameterNotNull("string", string);
+        MethodPreconditions.assertArgumentNotNull("string", string);
 
         String value = Strings.getFirstLine(string);
         Files.writeString(this.path, value, this.charset, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);

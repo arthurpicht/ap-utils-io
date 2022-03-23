@@ -230,4 +230,40 @@ class FileUtilsTest {
         assertTrue(FileUtils.isChild(reference, element));
     }
 
+    @Test
+    void copyDirectory_destinationNotExisting() throws IOException {
+        Path tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR).asPath();
+
+        Path source = Files.createDirectories(tempDir.resolve("source"));
+        Files.createDirectories(source.resolve("b/c"));
+        Files.createFile(source.resolve("b/file_a.txt"));
+        Files.createFile(source.resolve("b/c/file_c.txt"));
+
+        Path destination = tempDir.resolve("here/the/destination");
+
+        FileUtils.copyDirectory(source, destination);
+
+        assertTrue(FileUtils.isExistingDirectory(destination.resolve("b/c")));
+        assertTrue(FileUtils.isExistingRegularFile(destination.resolve("b/file_a.txt")));
+        assertTrue(FileUtils.isExistingRegularFile(destination.resolve("b/c/file_c.txt")));
+    }
+
+    @Test
+    void copyDirectory_destinationPreExisting() throws IOException {
+        Path tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR).asPath();
+
+        Path source = Files.createDirectories(tempDir.resolve("source"));
+        Files.createDirectories(source.resolve("b/c"));
+        Files.createFile(source.resolve("b/file_a.txt"));
+        Files.createFile(source.resolve("b/c/file_c.txt"));
+
+        Path destination = Files.createDirectories(tempDir.resolve("here/the/destination"));
+
+        FileUtils.copyDirectory(source, destination);
+
+        assertTrue(FileUtils.isExistingDirectory(destination.resolve("b/c")));
+        assertTrue(FileUtils.isExistingRegularFile(destination.resolve("b/file_a.txt")));
+        assertTrue(FileUtils.isExistingRegularFile(destination.resolve("b/c/file_c.txt")));
+    }
+
 }
