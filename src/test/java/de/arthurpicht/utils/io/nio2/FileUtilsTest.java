@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -264,6 +265,25 @@ class FileUtilsTest {
         assertTrue(FileUtils.isExistingDirectory(destination.resolve("b/c")));
         assertTrue(FileUtils.isExistingRegularFile(destination.resolve("b/file_a.txt")));
         assertTrue(FileUtils.isExistingRegularFile(destination.resolve("b/c/file_c.txt")));
+    }
+
+    @Test
+    void getContainingFiles() throws IOException {
+        List<Path> files = FileUtils.getContainingFiles(rootOfTree);
+        assertEquals(5, files.size());
+    }
+
+    @Test
+    void hasSubdirectories() throws IOException {
+        boolean hasSubdirectories = FileUtils.hasSubdirectories(rootOfTree);
+        assertTrue(hasSubdirectories);
+    }
+
+    @Test
+    void hasSubdirectoriesNeg() throws IOException {
+        Path tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR).asPath();
+        boolean hasSubdirectories = FileUtils.hasSubdirectories(tempDir);
+        assertFalse(hasSubdirectories);
     }
 
 }

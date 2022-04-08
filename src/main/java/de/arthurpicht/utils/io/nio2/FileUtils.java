@@ -4,9 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Comparator;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static de.arthurpicht.utils.core.assertion.MethodPreconditions.assertArgumentNotNull;
@@ -199,5 +197,44 @@ public class FileUtils {
         });
     }
 
+    /**
+     * Returns a list of paths, denoting all regular files found recursively in specified directory.
+     *
+     * @param directory directory to find files in
+     * @return list of regular files
+     * @throws IOException ...
+     */
+    public static List<Path> getContainingFiles(Path directory) throws IOException {
+        assertArgumentNotNull("directory", directory);
+        if (!FileUtils.isExistingDirectory(directory))
+            throw new IllegalArgumentException("Directory not found: [" + directory.toAbsolutePath() + "].");
+
+        List<Path> pathList = new ArrayList<>();
+
+        Files.walkFileTree(directory, new SimpleFileVisitor<>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attributes) {
+                pathList.add(file);
+                return FileVisitResult.CONTINUE;
+            }
+        });
+
+        return pathList;
+    }
+
+    /**
+     * Checks if specified directory contains at least one subdirectory.
+     *
+     * @param path Existing directory
+     * @return
+     * @throws IOException
+     */
+    public static boolean hasSubdirectories(Path path) throws IOException {
+        assertArgumentNotNull("path", path);
+        if (!FileUtils.isExistingDirectory(path))
+            throw new IllegalArgumentException("Specified path is no existing directory.");
+
+        return Files.list(path).anyMatch(Files::isDirectory);
+    }
 
 }
