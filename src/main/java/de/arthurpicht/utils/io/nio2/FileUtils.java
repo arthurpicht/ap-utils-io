@@ -67,7 +67,14 @@ public class FileUtils {
         return Files.exists(path) && Files.isRegularFile(path);
     }
 
+    /**
+     * Deletes specified directory recursively if existing. No operation is performed if directory does not exist.
+     * IOException is suppressed.
+     *
+     * @param dir directory to be deleted
+     */
     public static void rmDirSilently(Path dir) {
+        if (!isExistingDirectory(dir)) return;
         try {
             rmDir(dir);
         } catch (IOException e) {
