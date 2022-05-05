@@ -21,10 +21,12 @@ public class FileUtils {
 
     /**
      * Performs a force delete if specified path is classified as file or directory. No exceptions are thrown.
+     * Nothing is performed if path is not existing.
      *
      * @param path File or directory to be deleted.
      */
     public static void forceDeleteSilently(Path path) {
+        if (!Files.exists(path)) return;
         try {
             forceDelete(path);
         } catch (IOException e) {
@@ -42,13 +44,13 @@ public class FileUtils {
     public static void forceDelete(Path path) throws IOException {
         Objects.requireNonNull(path);
         if (!Files.exists(path) || (!isFileOrDirectory(path)))
-            throw new IllegalArgumentException("No such file or directory: " + path.toAbsolutePath().toString());
+            throw new IllegalArgumentException("No such file or directory: " + path.toAbsolutePath());
         if (Files.isRegularFile(path)) {
             Files.delete(path);
         } else if (Files.isDirectory(path)) {
             rmDir(path);
         } else {
-            throw new IllegalArgumentException("No such file or directory: " + path.toAbsolutePath().toString());
+            throw new IllegalArgumentException("No such file or directory: " + path.toAbsolutePath());
         }
     }
 

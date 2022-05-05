@@ -286,4 +286,44 @@ class FileUtilsTest {
         assertFalse(hasSubdirectories);
     }
 
+    @Test
+    void forceDelete() throws IOException {
+        Path tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR).asPath();
+        Path targetDir = Files.createDirectories(tempDir.resolve("test"));
+        Files.createFile(targetDir.resolve("test.txt"));
+
+        FileUtils.forceDelete(targetDir);
+
+        assertFalse(Files.exists(targetDir));
+    }
+
+    @Test
+    void forceDeleteNeg() throws IOException {
+        Path tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR).asPath();
+        Path targetDir = tempDir.resolve("test");
+
+        IllegalArgumentException e
+                = assertThrows(IllegalArgumentException.class, () -> FileUtils.forceDelete(targetDir));
+        assertTrue(e.getMessage().startsWith("No such file or directory: "));
+    }
+
+    @Test
+    void forceDeleteSilently() throws IOException {
+        Path tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR).asPath();
+        Path targetDir = Files.createDirectories(tempDir.resolve("test"));
+        Files.createFile(targetDir.resolve("test.txt"));
+
+        FileUtils.forceDeleteSilently(targetDir);
+
+        assertFalse(Files.exists(targetDir));
+    }
+
+    @Test
+    void forceDeleteSilentlyNotExisting() throws IOException {
+        Path tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR).asPath();
+        Path targetDir = tempDir.resolve("test");
+
+        FileUtils.forceDeleteSilently(targetDir);
+    }
+
 }
