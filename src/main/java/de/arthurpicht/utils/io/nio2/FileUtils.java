@@ -1,5 +1,6 @@
 package de.arthurpicht.utils.io.nio2;
 
+import de.arthurpicht.utils.core.assertion.MethodPreconditions;
 import de.arthurpicht.utils.io.assertions.PathAssertions;
 
 import java.io.File;
@@ -255,7 +256,7 @@ public class FileUtils {
      * @throws IOException
      */
     public static List<Path> getRegularFilesInDirectory(Path dir) throws IOException {
-        PathAssertions.assertIsExistingDirectory(dir);
+        assertIsExistingDirectory(dir);
         try (Stream<Path> stream = Files.list(dir)) {
             return stream.filter(Files::isRegularFile).collect(Collectors.toList());
         }
@@ -269,7 +270,7 @@ public class FileUtils {
      * @throws IOException
      */
     public static List<Path> getRegularNonHiddenFilesInDirectory(Path dir) throws IOException {
-        PathAssertions.assertIsExistingDirectory(dir);
+        assertIsExistingDirectory(dir);
         try (Stream<Path> stream = Files.list(dir)) {
             return stream
                     .filter(Files::isRegularFile)
@@ -324,6 +325,27 @@ public class FileUtils {
     }
 
     /**
+     * Checks subdirectory relationship over the directory subtree rooted by the specified reference directory.
+     * Both directories are expected to exist.
+     *
+     * @param referenceDir
+     * @param subDir
+     * @return
+     */
+    public static boolean isSubdirectory(Path referenceDir, Path subDir) {
+        MethodPreconditions.assertArgumentNotNull("referenceDir", referenceDir);
+        assertIsExistingDirectory(referenceDir);
+        MethodPreconditions.assertArgumentNotNull("subDir", subDir);
+        assertIsExistingDirectory(subDir);
+
+        Path dirWork = referenceDir.normalize().toAbsolutePath();
+        Path subDirWork = subDir.normalize().toAbsolutePath();
+
+        return (!dirWork.equals(subDirWork) && subDirWork.startsWith(dirWork));
+    }
+
+
+    /**
      * Checks if specified reference directory contains specified subdirectory.
      * Returns false if reference directory or subdirectory do not exist.
      *
@@ -344,5 +366,7 @@ public class FileUtils {
 
         return (!dirWork.equals(subdirWork) && subdirWork.startsWith(dirWork) && oneLonger);
     }
+
+
 
 }
