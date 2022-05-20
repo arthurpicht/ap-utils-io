@@ -1,13 +1,17 @@
 package de.arthurpicht.utils.io.nio2;
 
+import de.arthurpicht.utils.io.assertions.PathAssertions;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static de.arthurpicht.utils.core.assertion.MethodPreconditions.assertArgumentNotNull;
+import static de.arthurpicht.utils.io.assertions.PathAssertions.assertIsExistingDirectory;
 
 public class FileUtils {
 
@@ -173,6 +177,18 @@ public class FileUtils {
     }
 
     /**
+     * Checks if the farthest element of specified path equals to specified fileName. Parameter fileName can denote
+     * a file or directory.
+     *
+     * @param path
+     * @param fileName
+     * @return
+     */
+    public static boolean isPathEndingWithFileName(Path path, String fileName) {
+        return (path.getFileName().toString().equals(fileName));
+    }
+
+    /**
      * Recursively copies the specified source directory to specified destination directory. If the destination
      * directory is not preexisting then it will be created.<br>
      * Examples:<br>
@@ -232,18 +248,101 @@ public class FileUtils {
     }
 
     /**
-     * Checks if specified directory contains at least one subdirectory.
+     * Returns a list of all regular files in specified directory (non-recursive).
      *
-     * @param path Existing directory
+     * @param dir
      * @return
      * @throws IOException
      */
-    public static boolean hasSubdirectories(Path path) throws IOException {
-        assertArgumentNotNull("path", path);
-        if (!FileUtils.isExistingDirectory(path))
-            throw new IllegalArgumentException("Specified path is no existing directory.");
+    public static List<Path> getRegularFilesInDirectory(Path dir) throws IOException {
+        PathAssertions.assertIsExistingDirectory(dir);
+        try (Stream<Path> stream = Files.list(dir)) {
+            return stream.filter(Files::isRegularFile).collect(Collectors.toList());
+        }
+    }
 
-        return Files.list(path).anyMatch(Files::isDirectory);
+    /**
+     * Returns al list af all non-hidden regular files in specified directory (non-recursive).
+     *
+     * @param dir
+     * @return
+     * @throws IOException
+     */
+    public static List<Path> getRegularNonHiddenFilesInDirectory(Path dir) throws IOException {
+        PathAssertions.assertIsExistingDirectory(dir);
+        try (Stream<Path> stream = Files.list(dir)) {
+            return stream
+                    .filter(Files::isRegularFile)
+                    .filter(f -> !f.getFileName().toString().startsWith("."))
+                    .collect(Collectors.toList());
+        }
+    }
+
+    /**
+     * Checks if specified directory contains at least one subdirectory.
+     *
+     * @param dir Existing directory
+     * @return
+     * @throws IOException
+     */
+    public static boolean hasSubdirectories(Path dir) throws IOException {
+        assertArgumentNotNull("dir", dir);
+        assertIsExistingDirectory(dir);
+
+        return Files.list(dir).anyMatch(Files::isDirectory);
+    }
+
+    /**
+     * Obtains all subdirectories for specified path. Specified path must be an existing directory.
+     *
+     * @param dir directory
+     * @return a list of {@link Path} instances representing subdirectories
+     * @throws IOException
+     * @throws de.arthurpicht.utils.io.assertions.PathAssertionException if specified directory does not exist
+     */
+    public static List<Path> getSubdirectories(Path dir) throws IOException {
+        assertArgumentNotNull("dir", dir);
+        assertIsExistingDirectory(dir);
+        List<Path> subdirectories = Files.walk(dir, 1).filter(Files::isDirectory).collect(Collectors.toList());
+        // remove specified dir
+        subdirectories.remove(0);
+        return subdirectories;
+    }
+
+    /**
+     * Selects all subdirectories not ending with tilde.
+     *
+     * @param path
+     * @return
+     * @throws IOException
+     */
+    public static List<Path> getSubdirectoriesNotEndingWithTilde(Path path) throws IOException {
+        List<Path> subdirectories = getSubdirectories(path);
+        return subdirectories.stream()
+                .filter(p -> !p.getFileName().toString().endsWith("~"))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Checks if specified reference directory contains specified subdirectory.
+     * Returns false if reference directory or subdirectory do not exist.
+     *
+     * @param referenceDir
+     * @param subDir
+     * @return
+     */
+    public static boolean isDirectSubdirectory(Path referenceDir, Path subDir) {
+        Path dirWork = referenceDir.normalize().toAbsolutePath();
+        if (!FileUtils.isExistingDirectory(referenceDir)) return false;
+        int nameCountDirWork = dirWork.getNameCount();
+
+        Path subdirWork = subDir.normalize().toAbsolutePath();
+        if (!FileUtils.isExistingDirectory(subdirWork)) return false;
+        int nameCountSubdirWork = subdirWork.getNameCount();
+
+        boolean oneLonger = (nameCountSubdirWork - nameCountDirWork == 1);
+
+        return (!dirWork.equals(subdirWork) && subdirWork.startsWith(dirWork) && oneLonger);
     }
 
 }

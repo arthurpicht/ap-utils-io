@@ -232,6 +232,27 @@ class FileUtilsTest {
     }
 
     @Test
+    void isPathEndingWithFileName() {
+        Path path = Paths.get("/a/b/c");
+        String filename = "c";
+        assertTrue(FileUtils.isPathEndingWithFileName(path, filename));
+    }
+
+    @Test
+    void isPathEndingWithFileNameSlash() {
+        Path path = Paths.get("/a/b/c/");
+        String filename = "c";
+        assertTrue(FileUtils.isPathEndingWithFileName(path, filename));
+    }
+
+    @Test
+    void isPathEndingWithFileName_neg() {
+        Path path = Paths.get("/a/b/c");
+        String filename = "x";
+        assertFalse(FileUtils.isPathEndingWithFileName(path, filename));
+    }
+
+    @Test
     void copyDirectory_destinationNotExisting() throws IOException {
         Path tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR).asPath();
 
