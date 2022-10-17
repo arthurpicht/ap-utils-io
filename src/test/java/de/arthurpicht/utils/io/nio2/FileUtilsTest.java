@@ -521,4 +521,36 @@ class FileUtilsTest {
         assertEquals(2, fileList.size());
     }
 
+    @Test
+    void isRootDirectory_pos() {
+        Path path = Paths.get("/");
+        assertTrue(FileUtils.isRootDirectory(path));
+    }
+
+    @Test
+    void isRootDirectory_neg() throws IOException {
+        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+        assertFalse(FileUtils.isRootDirectory(tempDir.asPath()));
+    }
+
+    @Test
+    void isNonEmptyDirectory_empty() throws IOException {
+        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+        assertFalse(FileUtils.isNonEmptyDirectory(tempDir.asPath()));
+    }
+
+    @Test
+    void isNonEmptyDirectory_containingFile() throws IOException {
+        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+        Files.createFile(tempDir.asPath().resolve("a"));
+        assertTrue(FileUtils.isNonEmptyDirectory(tempDir.asPath()));
+    }
+
+    @Test
+    void isNonEmptyDirectory_containingDirectory() throws IOException {
+        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+        Files.createDirectory(tempDir.asPath().resolve("a"));
+        assertTrue(FileUtils.isNonEmptyDirectory(tempDir.asPath()));
+    }
+
 }

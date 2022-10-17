@@ -75,6 +75,32 @@ public class FileUtils {
     }
 
     /**
+     * Returns true if and only if specified path is an existing directory with no parent.
+     *
+     * @param path path to be checked as root
+     * @return
+     */
+    public static boolean isRootDirectory(Path path) {
+        if (!isExistingDirectory(path)) return false;
+        Path canonicalPath = path.normalize().toAbsolutePath();
+        return (canonicalPath.getParent() == null);
+    }
+
+    /**
+     * Returns true if and only if specified path is an existing directory with at least one containing element.
+     *
+     * @param path
+     * @return
+     * @throws IOException
+     */
+    public static boolean isNonEmptyDirectory(Path path) throws IOException {
+        if (!isExistingDirectory(path)) return false;
+        try (Stream<Path> files = Files.list(path)) {
+            return files.findAny().isPresent();
+        }
+    }
+
+    /**
      * Deletes specified directory recursively if existing. No operation is performed if directory does not exist.
      * IOException is suppressed.
      *
@@ -101,10 +127,11 @@ public class FileUtils {
         if (!Files.exists(dir) || !Files.isDirectory(dir))
             throw new IllegalArgumentException("No such directory: " + dir.toAbsolutePath());
 
-        Files.walk(dir)
-                .sorted(Comparator.reverseOrder())
-                .map(Path::toFile)
-                .forEach(File::delete);
+        try (Stream<Path> pathStream = Files.walk(dir)) {
+            pathStream.sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
     }
 
     /**
@@ -290,7 +317,9 @@ public class FileUtils {
         assertArgumentNotNull("dir", dir);
         assertIsExistingDirectory(dir);
 
-        return Files.list(dir).anyMatch(Files::isDirectory);
+        try (Stream<Path> pathStream = Files.list(dir)) {
+            return pathStream.anyMatch(Files::isDirectory);
+        }
     }
 
     /**
@@ -304,7 +333,12 @@ public class FileUtils {
     public static List<Path> getSubdirectories(Path dir) throws IOException {
         assertArgumentNotNull("dir", dir);
         assertIsExistingDirectory(dir);
-        List<Path> subdirectories = Files.walk(dir, 1).filter(Files::isDirectory).collect(Collectors.toList());
+
+        List<Path> subdirectories;
+        try (Stream<Path> pathStream = Files.walk(dir, 1)) {
+            subdirectories = pathStream.filter(Files::isDirectory).collect(Collectors.toList());
+        }
+
         // remove specified dir
         subdirectories.remove(0);
         return subdirectories;
@@ -366,7 +400,5 @@ public class FileUtils {
 
         return (!dirWork.equals(subdirWork) && subdirWork.startsWith(dirWork) && oneLonger);
     }
-
-
 
 }
