@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'com.github.arthurpicht'
-version '0.0.17-SNAPSHOT'
+version '0.0.17'
 
 repositories {
     maven { url "https://jitpack.io" }
@@ -27,4 +27,9 @@ java {
 
 test {
     useJUnitPlatform()
+}
+
+javadoc {
+    // options.addBooleanOption('html5', true)
+    destinationDir = file("javadoc")
 }

@@ -91,14 +91,14 @@ class FileUtilsTest {
     @Test
     void findDeepest_notExisting_neg() {
         Path noPath = Paths.get(UUID.randomUUID().toString());
-        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> FileUtils.findDeepest(noPath));
+        PathAssertionException e = assertThrows(PathAssertionException.class, () -> FileUtils.findDeepest(noPath));
         assertTrue(e.getMessage().contains("No such directory"));
     }
 
     @Test
     void findDeepest_noDirectory_neg() {
         Path existingFile = rootOfTree.resolve("level_1/level_1_2/level_1_2_1/file_1_2_1__1.txt");
-        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        PathAssertionException e = assertThrows(PathAssertionException.class,
                 () -> FileUtils.findDeepest(existingFile));
         assertTrue(e.getMessage().contains("No such directory"));
     }
@@ -133,14 +133,14 @@ class FileUtilsTest {
     @Test
     void getDepth_notExisting_neg() {
         Path noPath = Paths.get(UUID.randomUUID().toString());
-        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> FileUtils.getDepth(noPath));
+        PathAssertionException e = assertThrows(PathAssertionException.class, () -> FileUtils.getDepth(noPath));
         assertTrue(e.getMessage().contains("No such directory"));
     }
 
     @Test
     void getDepth_noDirectory_neg() {
         Path existingFile = rootOfTree.resolve("level_1/level_1_2/level_1_2_1/file_1_2_1__1.txt");
-        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        PathAssertionException e = assertThrows(PathAssertionException.class,
                 () -> FileUtils.getDepth(existingFile));
         assertTrue(e.getMessage().contains("No such directory"));
     }

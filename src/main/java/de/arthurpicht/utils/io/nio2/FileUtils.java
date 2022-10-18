@@ -1,13 +1,13 @@
 package de.arthurpicht.utils.io.nio2;
 
-import de.arthurpicht.utils.core.assertion.MethodPreconditions;
-import de.arthurpicht.utils.io.assertions.PathAssertions;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -44,10 +44,10 @@ public class FileUtils {
      * directory.
      *
      * @param path File or directory to be deleted.
-     * @throws IOException
+     * @throws IOException IOException
      */
     public static void forceDelete(Path path) throws IOException {
-        Objects.requireNonNull(path);
+        assertArgumentNotNull("path", path);
         if (!Files.exists(path) || (!isFileOrDirectory(path)))
             throw new IllegalArgumentException("No such file or directory: " + path.toAbsolutePath());
         if (Files.isRegularFile(path)) {
@@ -60,15 +60,27 @@ public class FileUtils {
     }
 
     public static boolean isFileOrDirectory(Path path) {
-        Objects.requireNonNull(path);
+        assertArgumentNotNull("path", path);
         return Files.isRegularFile(path) || Files.isDirectory(path);
     }
 
+    /**
+     * Returns true if and only if specified path represents an existing directory.
+     *
+     * @param path path to be checked
+     * @return
+     */
     public static boolean isExistingDirectory(Path path) {
         assertArgumentNotNull("path", path);
         return Files.exists(path) && Files.isDirectory(path);
     }
 
+    /**
+     * Returns true if and only if specified path represents an existing regular file.
+     *
+     * @param path path to be checked
+     * @return
+     */
     public static boolean isExistingRegularFile(Path path) {
         assertArgumentNotNull("path", path);
         return Files.exists(path) && Files.isRegularFile(path);
@@ -81,6 +93,7 @@ public class FileUtils {
      * @return
      */
     public static boolean isRootDirectory(Path path) {
+        assertArgumentNotNull("path", path);
         if (!isExistingDirectory(path)) return false;
         Path canonicalPath = path.normalize().toAbsolutePath();
         return (canonicalPath.getParent() == null);
@@ -94,6 +107,7 @@ public class FileUtils {
      * @throws IOException
      */
     public static boolean isNonEmptyDirectory(Path path) throws IOException {
+        assertArgumentNotNull("path", path);
         if (!isExistingDirectory(path)) return false;
         try (Stream<Path> files = Files.list(path)) {
             return files.findAny().isPresent();
@@ -107,6 +121,7 @@ public class FileUtils {
      * @param dir directory to be deleted
      */
     public static void rmDirSilently(Path dir) {
+        assertArgumentNotNull("path", dir);
         if (!isExistingDirectory(dir)) return;
         try {
             rmDir(dir);
@@ -123,7 +138,7 @@ public class FileUtils {
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void rmDir(Path dir) throws IOException {
-        Objects.requireNonNull(dir);
+        assertArgumentNotNull("dir", dir);
         if (!Files.exists(dir) || !Files.isDirectory(dir))
             throw new IllegalArgumentException("No such directory: " + dir.toAbsolutePath());
 
@@ -135,20 +150,19 @@ public class FileUtils {
     }
 
     /**
-     * Finds the deepest directory in the directory tree. If there are more than one paths with equal length, some of
+     * Finds the deepest directory in the directory tree. If there are more than one path with equal length, some of
      * those paths will be returned.
      *
-     * @param dirPath starting point to search from
-     * @return deepest path under specified dirPath
+     * @param dir starting point to search from
+     * @return deepest path under specified dir
      * @throws IOException ioException
      * @throws IllegalArgumentException if specified path is no existing directory
      */
-    public static Path findDeepest(Path dirPath) throws IOException {
-        Objects.requireNonNull(dirPath);
-        if (!Files.isDirectory(dirPath) || !Files.exists(dirPath))
-            throw new IllegalArgumentException("No such directory: " + dirPath.toAbsolutePath().toString());
+    public static Path findDeepest(Path dir) throws IOException {
+        assertArgumentNotNull("dir", dir);
+        assertIsExistingDirectory(dir);
 
-        try (Stream<Path> s = Files.walk(dirPath)) {
+        try (Stream<Path> s = Files.walk(dir)) {
             Optional<Path> deepestOptional = s.filter(Files::isDirectory).max(Comparator.comparing(Path::getNameCount));
             if (deepestOptional.isEmpty()) throw new IllegalStateException();
             return deepestOptional.get();
@@ -163,9 +177,8 @@ public class FileUtils {
      * @throws IOException ioException
      */
     public static int getDepth(Path path) throws IOException {
-        Objects.requireNonNull(path);
-        if (!Files.isDirectory(path) || !Files.exists(path))
-            throw new IllegalArgumentException("No such directory: " + path.toAbsolutePath().toString());
+        assertArgumentNotNull("path", path);
+        assertIsExistingDirectory(path);
 
         Path deepestPath = findDeepest(path);
         return deepestPath.getNameCount() - path.getNameCount();
@@ -178,6 +191,7 @@ public class FileUtils {
      * @return canonical form of specified path
      */
     public static Path toCanonicalPath(Path path) {
+        assertArgumentNotNull("path", path);
         return path.normalize().toAbsolutePath();
     }
 
@@ -198,6 +212,9 @@ public class FileUtils {
      * @return
      */
     public static boolean isChild(Path reference, Path element) {
+        assertArgumentNotNull("reference", reference);
+        assertArgumentNotNull("element", element);
+
         Path referenceCanonical = toCanonicalPath(reference);
         Path elementCanonical = toCanonicalPath(element);
         if (referenceCanonical.equals(elementCanonical)) return false;
@@ -213,6 +230,8 @@ public class FileUtils {
      * @return
      */
     public static boolean isPathEndingWithFileName(Path path, String fileName) {
+        assertArgumentNotNull("path", path);
+        assertArgumentNotNull("fileName", fileName);
         return (path.getFileName().toString().equals(fileName));
     }
 
@@ -259,8 +278,7 @@ public class FileUtils {
      */
     public static List<Path> getContainingFiles(Path directory) throws IOException {
         assertArgumentNotNull("directory", directory);
-        if (!FileUtils.isExistingDirectory(directory))
-            throw new IllegalArgumentException("Directory not found: [" + directory.toAbsolutePath() + "].");
+        assertIsExistingDirectory(directory);
 
         List<Path> pathList = new ArrayList<>();
 
@@ -283,6 +301,7 @@ public class FileUtils {
      * @throws IOException
      */
     public static List<Path> getRegularFilesInDirectory(Path dir) throws IOException {
+        assertArgumentNotNull("dir", dir);
         assertIsExistingDirectory(dir);
         try (Stream<Path> stream = Files.list(dir)) {
             return stream.filter(Files::isRegularFile).collect(Collectors.toList());
@@ -297,6 +316,7 @@ public class FileUtils {
      * @throws IOException
      */
     public static List<Path> getRegularNonHiddenFilesInDirectory(Path dir) throws IOException {
+        assertArgumentNotNull("dir", dir);
         assertIsExistingDirectory(dir);
         try (Stream<Path> stream = Files.list(dir)) {
             return stream
@@ -352,6 +372,8 @@ public class FileUtils {
      * @throws IOException
      */
     public static List<Path> getSubdirectoriesNotEndingWithTilde(Path path) throws IOException {
+        assertArgumentNotNull("path", path);
+        assertIsExistingDirectory(path);
         List<Path> subdirectories = getSubdirectories(path);
         return subdirectories.stream()
                 .filter(p -> !p.getFileName().toString().endsWith("~"))
@@ -367,9 +389,9 @@ public class FileUtils {
      * @return
      */
     public static boolean isSubdirectory(Path referenceDir, Path subDir) {
-        MethodPreconditions.assertArgumentNotNull("referenceDir", referenceDir);
+        assertArgumentNotNull("referenceDir", referenceDir);
         assertIsExistingDirectory(referenceDir);
-        MethodPreconditions.assertArgumentNotNull("subDir", subDir);
+        assertArgumentNotNull("subDir", subDir);
         assertIsExistingDirectory(subDir);
 
         Path dirWork = referenceDir.normalize().toAbsolutePath();
@@ -380,7 +402,7 @@ public class FileUtils {
 
 
     /**
-     * Checks if specified reference directory contains specified subdirectory.
+     * Checks if specified reference directory contains specified subdirectory as a direct sibling.
      * Returns false if reference directory or subdirectory do not exist.
      *
      * @param referenceDir

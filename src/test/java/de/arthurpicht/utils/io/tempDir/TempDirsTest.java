@@ -16,9 +16,7 @@ class TempDirsTest {
     @Test
     public void parentNotExisting() {
         Path path = Paths.get("thisIsNotExisting");
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            TempDirs.createUniqueTempDir(path);
-        });
+        Assertions.assertThrows(IllegalArgumentException.class, () -> TempDirs.createUniqueTempDir(path));
     }
 
     @Test
