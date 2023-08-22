@@ -32,7 +32,8 @@ public class GuaranteedDir {
      */
     public static Path get(String first, String... more) {
         Path dir = Paths.get(first, more);
-        return guarantee(dir);
+        guarantee(dir);
+        return dir;
     }
 
     /**
@@ -44,47 +45,43 @@ public class GuaranteedDir {
      */
     public static Path get(URI uri) {
         Path dir = Paths.get(uri);
-        return guarantee(dir);
+        guarantee(dir);
+        return dir;
+    }
+
+    /**
+     * Guarantees that specified directory exists and is writeable. The first part of the path is expected as existent.
+     * Directory denoted by second part is created if not preexisting including all parent levels.
+     *
+     * @param assertedFirst a parent directory of specified directory that must exist and must be writable
+     * @param second a subdirectory relative to specified parent directory that will be created if not preexisting.
+     * @return the resulting path of guaranteed directory
+     */
+    public static Path getAsSubdir(Path assertedFirst, Path second) {
+        if (!FileUtils.isExistingDirectory(assertedFirst))
+            throw new GuaranteedDirException("Directory not found: [" + assertedFirst.toAbsolutePath() + "].");
+        if (!Files.isWritable(assertedFirst))
+            throw new GuaranteedDirException("Write rights missing for directory: " +
+                    "[" + assertedFirst.toAbsolutePath() + "].");
+        Path dir = assertedFirst.resolve(second);
+        guarantee(dir);
+        return dir;
     }
 
     /**
      * Guarantees that specified directory exists and is writeable. Directory and all parent directories will
      * be created if necessary.
      *
-     * @param path directory
+     * @param dir directory
      */
-    public static void check(Path path) {
-        guarantee(path);
-    }
-
-    /**
-     * Guarantees that specified directory exists and is writeable. The specification of directory is divided into
-     * a parent directory and a subdirectory relative to parent. The specified parent directory  does not necessarily
-     * have to be a direct parent. Specified subdirectories will be created is not existent.
-     *
-     * @param assertedParentDir a parent directory of specified directory that must exist and must be writable
-     * @param subDir a subdirectory relative to specified parent directory that will be created if not preexisting.
-     * @return the resulting path of guaranteed directory
-     */
-    public static Path assertedGet(Path assertedParentDir, Path subDir) {
-        if (!FileUtils.isExistingDirectory(assertedParentDir))
-            throw new GuaranteedDirException("Directory not found: [" + assertedParentDir.toAbsolutePath() + "].");
-        if (!Files.isWritable(assertedParentDir))
-            throw new GuaranteedDirException("Write rights missing for directory: " +
-                    "[" + assertedParentDir.toAbsolutePath() + "].");
-        Path dir = assertedParentDir.resolve(subDir);
-        return guarantee(dir);
-    }
-
-    private static Path guarantee(Path dir) {
-        if (FileUtils.isExistingDirectory(dir) && Files.isWritable(dir)) return dir;
+    public static void guarantee(Path dir) {
+        if (FileUtils.isExistingDirectory(dir) && Files.isWritable(dir)) return;
         try {
             Files.createDirectories(dir);
         } catch (IOException e) {
             throw new GuaranteedDirException("Could not create directory [" + dir.toAbsolutePath() + "]. " +
                     "Cause: " + e.getMessage(), e);
         }
-        return dir;
     }
 
 }
