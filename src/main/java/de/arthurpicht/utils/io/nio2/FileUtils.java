@@ -205,6 +205,15 @@ public class FileUtils {
     }
 
     /**
+     * Returns the home directory of current user.
+     *
+     * @return home directory
+     */
+    private static Path getHomeDir() {
+        return Paths.get(System.getProperty("user.home"));
+    }
+
+    /**
      * Determines whether specified path element is a child element of specified reference.
      *
      * @param reference
