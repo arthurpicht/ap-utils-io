@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'com.github.arthurpicht'
-version '0.0.18'
+version '0.0.19-SNAPSHOT'
 
 repositories {
     maven { url "https://jitpack.io" }
@@ -17,11 +17,9 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
 }
 
-// since gradle 6.7
-// see https://docs.gradle.org/6.7/release-notes.html
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(11)
+        languageVersion = JavaLanguageVersion.of(17)
     }
 }
 
