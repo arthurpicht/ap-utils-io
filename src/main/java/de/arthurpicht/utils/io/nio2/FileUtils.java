@@ -209,7 +209,7 @@ public class FileUtils {
      *
      * @return home directory
      */
-    private static Path getHomeDir() {
+    public static Path getHomeDir() {
         return Paths.get(System.getProperty("user.home"));
     }
 
