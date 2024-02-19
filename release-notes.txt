@@ -5,3 +5,5 @@
 * JDK 17 required
 * new Class TextFileUtils with methods: readLinesAsStrings, append, appendLine, appendLines
 * TextFile.getLinesAsStrings(...) is deprecated. Use new TextFileUtils.readLinesAsStrings(...) instead
+
+## 0.0.20
