@@ -16,6 +16,39 @@ import static org.junit.jupiter.api.Assertions.*;
 class TextFileUtilsTest {
 
     @Test
+    void containsLineTrimmedSimple() throws IOException {
+        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove("testTemp");
+        Path textFile = tempDir.asPath().resolve("textFile.txt");
+        Files.createFile(textFile);
+        TextFileUtils.appendLine(textFile, "test1");
+        TextFileUtils.appendLine(textFile, "test2");
+
+        assertTrue(TextFileUtils.containsLineTrimmed(textFile, "test2"));
+    }
+
+    @Test
+    void containsLineTrimmedWhiteSpaceInSearchString() throws IOException {
+        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove("testTemp");
+        Path textFile = tempDir.asPath().resolve("textFile.txt");
+        Files.createFile(textFile);
+        TextFileUtils.appendLine(textFile, "test1");
+        TextFileUtils.appendLine(textFile, "test2");
+
+        assertTrue(TextFileUtils.containsLineTrimmed(textFile, "   test2"));
+    }
+
+    @Test
+    void containsLineTrimmedWhiteSpaceInLine() throws IOException {
+        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove("testTemp");
+        Path textFile = tempDir.asPath().resolve("textFile.txt");
+        Files.createFile(textFile);
+        TextFileUtils.appendLine(textFile, "test1");
+        TextFileUtils.appendLine(textFile, "   test2   ");
+
+        assertTrue(TextFileUtils.containsLineTrimmed(textFile, "test2"));
+    }
+
+    @Test
     void append() throws IOException {
         TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove("testTemp");
         Path textFile = tempDir.asPath().resolve("textFile.txt");
