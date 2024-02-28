@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'com.github.arthurpicht'
-version '0.0.20-SNAPSHOT'
+version '0.0.21'
 
 repositories {
     maven { url "https://jitpack.io" }
