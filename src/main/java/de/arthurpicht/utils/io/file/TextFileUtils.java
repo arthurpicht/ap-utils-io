@@ -1,5 +1,6 @@
 package de.arthurpicht.utils.io.file;
 
+import de.arthurpicht.utils.core.assertion.MethodPreconditions;
 import de.arthurpicht.utils.core.strings.Strings;
 import de.arthurpicht.utils.io.nio2.FileUtils;
 
@@ -12,6 +13,8 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
+import static de.arthurpicht.utils.core.assertion.MethodPreconditions.assertArgumentNotNull;
+
 public class TextFileUtils {
 
     /**
@@ -19,9 +22,13 @@ public class TextFileUtils {
      *
      * @param path file to be read
      * @return list of strings as lines
-     * @throws IOException if file does not exist or on error when reading
+     * @throws IOException on error when reading file
      */
     public static List<String> readLinesAsStrings(Path path) throws IOException {
+        assertArgumentNotNull("path", path);
+        if (!FileUtils.isExistingRegularFile(path))
+            throw new IllegalArgumentException("File not found: [" + path.toAbsolutePath() + "].");
+
         List<String> lines = new ArrayList<>();
         try (BufferedReader bufferedReader = new BufferedReader(new java.io.FileReader(path.toFile()))) {
             String line;
@@ -30,6 +37,25 @@ public class TextFileUtils {
             }
         }
         return lines;
+    }
+
+    /**
+     * Checks if specified text file contains specified line. The specified line string is checked as trimmed against
+     * all trimmed lines in the text file.
+     *
+     * @param path file to be checked
+     * @param line line string to be checked
+     * @return if file contains line (all trimmed)
+     * @throws IOException on error when reading file
+     */
+    public static boolean containsLineTrimmed(Path path, String line) throws IOException {
+        assertArgumentNotNull("path", path);
+        assertArgumentNotNull("line", line);
+        if (!FileUtils.isExistingRegularFile(path))
+            throw new IllegalArgumentException("File not found: [" + path.toAbsolutePath() + "].");
+        List<String> lines = readLinesAsStrings(path);
+        String lineTrimmed = line.trim();
+        return lines.stream().anyMatch(l -> l.trim().equals(lineTrimmed));
     }
 
     /**
