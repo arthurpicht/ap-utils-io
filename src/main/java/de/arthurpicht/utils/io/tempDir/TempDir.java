@@ -146,4 +146,11 @@ public class TempDir {
         return Files.exists(this.tempDir) && Files.isDirectory(this.tempDir);
     }
 
+    /**
+     * Creates a default TempDir: located in system temp dir with auto remove.
+     */
+    public static TempDir create() {
+        return new TempDir.Creator().create();
+    }
+
 }

@@ -1,6 +1,5 @@
 package de.arthurpicht.utils.io.file;
 
-import de.arthurpicht.utils.core.assertion.MethodPreconditions;
 import de.arthurpicht.utils.core.strings.Strings;
 import de.arthurpicht.utils.io.nio2.FileUtils;
 
@@ -37,6 +36,27 @@ public class TextFileUtils {
             }
         }
         return lines;
+    }
+
+    /**
+     * Reads the content of a file to a list of strings representing the lines. Each line will be trimmed.
+     * Empty lines and lines only consisting white space will be removed.
+     *
+     * @param path file to be read
+     * @return list of strings as lines
+     * @throws IOException on error when reading file
+     */
+    public static List<String> readTrimmedContentLines(Path path) throws IOException {
+        assertArgumentNotNull("path", path);
+        List<String> lines = readLinesAsStrings(path);
+        List<String> list = new ArrayList<>();
+        for (String s1 : lines) {
+            s1 = s1.trim();
+            if (!s1.isEmpty()) {
+                list.add(s1);
+            }
+        }
+        return list;
     }
 
     /**

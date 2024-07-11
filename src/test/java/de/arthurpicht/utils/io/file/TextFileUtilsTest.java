@@ -16,8 +16,23 @@ import static org.junit.jupiter.api.Assertions.*;
 class TextFileUtilsTest {
 
     @Test
+    void readTrimmedContentLines() throws IOException {
+        TempDir tempDir = TempDir.create();
+        Path textFile = tempDir.asPath().resolve("textFile.txt");
+        Files.createFile(textFile);
+        TextFileUtils.appendLine(textFile, "test1");
+        TextFileUtils.appendLine(textFile, " test2 ");
+        TextFileUtils.appendLine(textFile, "");
+
+        List<String> contentLines = TextFileUtils.readTrimmedContentLines(textFile);
+        assertEquals(2, contentLines.size());
+        assertEquals("test1", contentLines.get(0));
+        assertEquals("test2", contentLines.get(1));
+    }
+
+    @Test
     void containsLineTrimmedSimple() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove("testTemp");
+        TempDir tempDir = TempDir.create();
         Path textFile = tempDir.asPath().resolve("textFile.txt");
         Files.createFile(textFile);
         TextFileUtils.appendLine(textFile, "test1");
@@ -28,7 +43,7 @@ class TextFileUtilsTest {
 
     @Test
     void containsLineTrimmedWhiteSpaceInSearchString() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove("testTemp");
+        TempDir tempDir = TempDir.create();
         Path textFile = tempDir.asPath().resolve("textFile.txt");
         Files.createFile(textFile);
         TextFileUtils.appendLine(textFile, "test1");
@@ -39,7 +54,7 @@ class TextFileUtilsTest {
 
     @Test
     void containsLineTrimmedWhiteSpaceInLine() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove("testTemp");
+        TempDir tempDir = TempDir.create();
         Path textFile = tempDir.asPath().resolve("textFile.txt");
         Files.createFile(textFile);
         TextFileUtils.appendLine(textFile, "test1");
@@ -50,7 +65,7 @@ class TextFileUtilsTest {
 
     @Test
     void append() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove("testTemp");
+        TempDir tempDir = TempDir.create();
         Path textFile = tempDir.asPath().resolve("textFile.txt");
         Files.createFile(textFile);
         TextFileUtils.append(textFile, "test");
@@ -64,7 +79,7 @@ class TextFileUtilsTest {
 
     @Test
     void appendLine_empty() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove("testTemp");
+        TempDir tempDir = TempDir.create();
         Path textFile = tempDir.asPath().resolve("textFile.txt");
         Files.createFile(textFile);
         TextFileUtils.appendLine(textFile, "test");
@@ -79,7 +94,7 @@ class TextFileUtilsTest {
 
     @Test
     void appendLine_nonemptyNoNewLine() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove("testTemp");
+        TempDir tempDir = TempDir.create();
         Path textFile = tempDir.asPath().resolve("textFile.txt");
         Files.createFile(textFile);
         TextFileUtils.append(textFile, "pre");
@@ -96,7 +111,7 @@ class TextFileUtilsTest {
 
     @Test
     void appendLines_empty() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove("testTemp");
+        TempDir tempDir = TempDir.create();
         Path textFile = tempDir.asPath().resolve("textFile.txt");
         Files.createFile(textFile);
         List<String> lines = Arrays.asList("line1", "line2");
@@ -110,7 +125,7 @@ class TextFileUtilsTest {
 
     @Test
     void appendLines_nonemptyNoNewLine() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove("testTemp");
+        TempDir tempDir = TempDir.create();
         Path textFile = tempDir.asPath().resolve("textFile.txt");
         Files.createFile(textFile);
         TextFileUtils.append(textFile, "pre");
@@ -126,7 +141,7 @@ class TextFileUtilsTest {
 
     @Test
     void appendLines_nonemptyWithNewLine() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove("testTemp");
+        TempDir tempDir = TempDir.create();
         Path textFile = tempDir.asPath().resolve("textFile.txt");
         Files.createFile(textFile);
         TextFileUtils.appendLine(textFile, "pre");
@@ -142,7 +157,7 @@ class TextFileUtilsTest {
 
     @Test
     void endsWithNewLineOrIsEmpty_empty() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove("testTemp");
+        TempDir tempDir = TempDir.create();
         Path textFile = tempDir.asPath().resolve("textFile.txt");
         Files.createFile(textFile);
 
@@ -151,7 +166,7 @@ class TextFileUtilsTest {
 
     @Test
     void endsWithNewLineOrIsEmpty_oneLineNoNewLine() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove("testTemp");
+        TempDir tempDir = TempDir.create();
         Path textFile = tempDir.asPath().resolve("textFile.txt");
         Files.createFile(textFile);
 
@@ -162,7 +177,7 @@ class TextFileUtilsTest {
 
     @Test
     void endsWithNewLineOrIsEmpty_oneLineWithNewLine() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove("testTemp");
+        TempDir tempDir = TempDir.create();
         Path textFile = tempDir.asPath().resolve("textFile.txt");
         Files.createFile(textFile);
 
