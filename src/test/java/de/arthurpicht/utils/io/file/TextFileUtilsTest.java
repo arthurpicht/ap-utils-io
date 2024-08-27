@@ -2,7 +2,6 @@ package de.arthurpicht.utils.io.file;
 
 import de.arthurpicht.utils.io.nio2.FileUtils;
 import de.arthurpicht.utils.io.tempDir.TempDir;
-import de.arthurpicht.utils.io.tempDir.TempDirs;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -14,6 +13,78 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class TextFileUtilsTest {
+
+    @Test
+    void readLinesAsStrings() throws IOException {
+        TempDir tempDir = TempDir.create();
+        Path textFile = tempDir.asPath().resolve("textFile.txt");
+        Files.createFile(textFile);
+        TextFileUtils.appendLine(textFile, "test1");
+        TextFileUtils.appendLine(textFile, " test2 ");
+        TextFileUtils.appendLine(textFile, "");
+
+        List<String> contentLines = TextFileUtils.readLinesAsStrings(textFile);
+        assertEquals(3, contentLines.size());
+        assertEquals("test1", contentLines.get(0));
+        assertEquals(" test2 ", contentLines.get(1));
+        assertEquals("", contentLines.get(2));
+    }
+
+    @Test
+    void readUncommentedLinesAsStringsSimple() throws IOException {
+        TempDir tempDir = TempDir.create();
+        Path textFile = tempDir.asPath().resolve("textFile.txt");
+        Files.createFile(textFile);
+        TextFileUtils.appendLine(textFile, "test1");
+        TextFileUtils.appendLine(textFile, "#test2");
+        TextFileUtils.appendLine(textFile, " # test3");
+        TextFileUtils.appendLine(textFile, " test # 3");
+        TextFileUtils.appendLine(textFile, "");
+
+        List<String> contentLines = TextFileUtils.readNonCommentedLinesAsStrings(textFile, "#");
+        assertEquals(3, contentLines.size());
+        assertEquals("test1", contentLines.get(0));
+        assertEquals(" test # 3", contentLines.get(1));
+        assertEquals("", contentLines.get(2));
+    }
+
+    @Test
+    void readUncommentedLinesAsStringsDoubleSlash() throws IOException {
+        TempDir tempDir = TempDir.create();
+        Path textFile = tempDir.asPath().resolve("textFile.txt");
+        Files.createFile(textFile);
+        TextFileUtils.appendLine(textFile, "test1");
+        TextFileUtils.appendLine(textFile, "//test2");
+        TextFileUtils.appendLine(textFile, " // test3");
+        TextFileUtils.appendLine(textFile, " test // 3");
+        TextFileUtils.appendLine(textFile, "");
+
+        List<String> contentLines = TextFileUtils.readNonCommentedLinesAsStrings(textFile, "//");
+        assertEquals(3, contentLines.size());
+        assertEquals("test1", contentLines.get(0));
+        assertEquals(" test // 3", contentLines.get(1));
+        assertEquals("", contentLines.get(2));
+    }
+
+    @Test
+    void readUncommentedLinesAsStringsEmptyPrefix() throws IOException {
+        TempDir tempDir = TempDir.create();
+        Path textFile = tempDir.asPath().resolve("textFile.txt");
+        Files.createFile(textFile);
+        TextFileUtils.appendLine(textFile, "test1");
+        TextFileUtils.appendLine(textFile, "//test2");
+        TextFileUtils.appendLine(textFile, " # test3");
+        TextFileUtils.appendLine(textFile, " test // 3 ");
+        TextFileUtils.appendLine(textFile, "");
+
+        List<String> contentLines = TextFileUtils.readNonCommentedLinesAsStrings(textFile, "");
+        assertEquals(5, contentLines.size());
+        assertEquals("test1", contentLines.get(0));
+        assertEquals("//test2", contentLines.get(1));
+        assertEquals(" # test3", contentLines.get(2));
+        assertEquals(" test // 3 ", contentLines.get(3));
+        assertEquals("", contentLines.get(4));
+    }
 
     @Test
     void readTrimmedContentLines() throws IOException {

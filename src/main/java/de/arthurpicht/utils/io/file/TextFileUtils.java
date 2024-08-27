@@ -28,10 +28,34 @@ public class TextFileUtils {
         if (!FileUtils.isExistingRegularFile(path))
             throw new IllegalArgumentException("File not found: [" + path.toAbsolutePath() + "].");
 
+        return readNonCommentedLinesAsStrings(path, "");
+    }
+
+    /**
+     * Returns the content of a file as a list of strings representing the lines. Lines that begin
+     * with optional whitespace followed by specified commentPrefix are ignored. If specified commentPrefix is
+     * empty all lines will be returned.
+     *
+     * @param path file to be read
+     * @param commentPrefix prefix for lines to be ignored as comment
+     * @return list of lines as strings
+     * @throws IOException on error when reading file
+     */
+    public static List<String> readNonCommentedLinesAsStrings(Path path, String commentPrefix) throws IOException {
+        assertArgumentNotNull("path", path);
+        assertArgumentNotNull("commentPrefix", commentPrefix);
+        if (!FileUtils.isExistingRegularFile(path))
+            throw new IllegalArgumentException("File not found: [" + path.toAbsolutePath() + "].");
+
+        return readNonCommentedLinesAsStringsUnchecked(path, commentPrefix);
+    }
+
+    private static List<String> readNonCommentedLinesAsStringsUnchecked(Path path, String commentPrefix) throws IOException {
         List<String> lines = new ArrayList<>();
         try (BufferedReader bufferedReader = new BufferedReader(new java.io.FileReader(path.toFile()))) {
             String line;
             while ((line = bufferedReader.readLine()) != null) {
+                if (!commentPrefix.isEmpty() && line.stripLeading().startsWith(commentPrefix)) continue;
                 lines.add(line);
             }
         }
@@ -161,4 +185,5 @@ public class TextFileUtils {
             return readByte == 0xA || readByte == 0xD;
         }
     }
+
 }
