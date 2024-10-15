@@ -6,13 +6,12 @@ public class DemoHttpsServer {
 
     public static void main(String[] args) {
 
-        APHttpsServer apHttpsServer = new APHttpsServer(
-                new DemoHttpHandler(),
-                4433,
-                FileUtils.getHomeDir().resolve("work/20241014-httpsserver/keystore.jks"),
-                "geheim",
-                "/"
-        );
+        APHttpsServer apHttpsServer = new APHttpsServer.Builder()
+                .withHttpHandler(new DemoHttpHandler())
+                .withPort(4433)
+                .withKeystorePath(FileUtils.getHomeDir().resolve("work/20241014-httpsserver/keystore.jks"))
+                .withKeystorePassword("geheim")
+                .build();
 
         try {
             apHttpsServer.start();
