@@ -1,33 +1,52 @@
 plugins {
     id 'java'
+    id 'maven-publish'
 }
 
-group 'com.github.arthurpicht'
-version '0.0.22'
+group 'de.arthurpicht'
+version '0.0.23'
+def artifact = 'ap-utils-io'
 
 repositories {
-    maven { url "https://jitpack.io" }
+    maven { url "https://raw.githubusercontent.com/arthurpicht/mvn-repo/main/releases"}
     mavenCentral()
 }
 
 dependencies {
-    implementation 'com.github.arthurpicht:utils-core:1.18.0'
+    implementation 'de.arthurpicht:ap-utils-core:1.19.0'
 
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.3'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.3'
 }
 
-//java {
-//    toolchain {
-//        languageVersion = JavaLanguageVersion.of(17)
-//    }
-//}
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
 
 test {
     useJUnitPlatform()
 }
 
+base {
+    archivesName = artifact
+}
+
 javadoc {
     // options.addBooleanOption('html5', true)
     destinationDir = file("javadoc")
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            artifactId = artifact
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            url = layout.buildDirectory.dir(project.gradle.gradleUserHomeDir.parent + "/gitrepos/ap/mvn-repo/releases")
+        }
+    }
 }
