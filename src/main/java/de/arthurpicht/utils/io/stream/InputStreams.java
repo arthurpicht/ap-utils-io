@@ -1,16 +1,11 @@
-package de.arthurpicht.utils.io;
+package de.arthurpicht.utils.io.stream;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@Deprecated
 public class InputStreams {
 
-    /**
-     * Moved to package de.arthurpicht.utils.io.ioStream
-     */
-    @Deprecated
     public static List<String> toStrings(InputStream inputStream) throws IOException {
         List<String> strings = new ArrayList<>();
         try (Reader isr = new InputStreamReader(inputStream);
@@ -23,10 +18,6 @@ public class InputStreams {
         return strings;
     }
 
-    /**
-     * Moved to package de.arthurpicht.utils.io.ioStream
-     */
-    @Deprecated
     public static InputStream getFileFromResourceAsStream(String fileName) {
         ClassLoader classLoader = InputStreams.class.getClassLoader();
         InputStream inputStream = classLoader.getResourceAsStream(fileName);

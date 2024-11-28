@@ -1,7 +1,6 @@
 package de.arthurpicht.utils.io.assertions;
 
 import de.arthurpicht.utils.io.tempDir.TempDir;
-import de.arthurpicht.utils.io.tempDir.TempDirs;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -18,7 +17,9 @@ class PathAssertionsTest {
 
     @Test
     void assertFileName_filePos() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
         Files.createFile(tempDir.asPath().resolve("a"));
         Path path = tempDir.asPath().resolve("a");
 
@@ -27,7 +28,9 @@ class PathAssertionsTest {
 
     @Test
     void assertFileName_fileNeg() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
         Files.createFile(tempDir.asPath().resolve("a"));
         Path path = tempDir.asPath().resolve("a");
 
@@ -35,8 +38,10 @@ class PathAssertionsTest {
     }
 
     @Test
-    void assertFileName_dirPos() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+    void assertFileName_dirPos() {
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
 
         assertDoesNotThrow(() ->
                 PathAssertions.assertFileName(tempDir.asPath(), tempDir.asPath().getFileName().toString())
@@ -44,15 +49,20 @@ class PathAssertionsTest {
     }
 
     @Test
-    void assertFileName_dirNeg() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+    void assertFileName_dirNeg() {
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
 
         assertThrows(PathAssertionException.class, () -> PathAssertions.assertFileName(tempDir.asPath(), "b"));
     }
 
     @Test
-    void assertFileName_dirPosNotExisting() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+    void assertFileName_dirPosNotExisting() {
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
+
         Path dir = tempDir.asPath().resolve(UUID.randomUUID().toString());
 
         assertDoesNotThrow(() ->
@@ -61,8 +71,10 @@ class PathAssertionsTest {
     }
 
     @Test
-    void assertPathNotExisting() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+    void assertPathNotExisting() {
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
 
         assertThrows(PathAssertionException.class, () ->
                 PathAssertions.assertPathNotExisting(tempDir.asPath())
@@ -70,8 +82,10 @@ class PathAssertionsTest {
     }
 
     @Test
-    void assertPathNotExisting_neg() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+    void assertPathNotExisting_neg() {
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
 
         assertDoesNotThrow(() ->
                 PathAssertions.assertPathNotExisting(tempDir.asPath().resolve(UUID.randomUUID().toString()))
@@ -80,7 +94,9 @@ class PathAssertionsTest {
 
     @Test
     void assertIsDirectSubdirectory() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
         Path subDir = Files.createDirectory(tempDir.asPath().resolve("sub"));
 
         assertDoesNotThrow(() ->
@@ -89,9 +105,14 @@ class PathAssertionsTest {
     }
 
     @Test
-    void assertIsDirectSubdirectory_negNoSubDir() throws IOException {
-        TempDir tempDir1 = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
-        TempDir tempDir2 = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+    void assertIsDirectSubdirectory_negNoSubDir() {
+        TempDir tempDir1 = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
+
+        TempDir tempDir2 = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
 
         assertThrows(PathAssertionException.class, () ->
                 PathAssertions.assertIsDirectSubdirectory(tempDir1.asPath(), tempDir2.asPath())
@@ -100,7 +121,9 @@ class PathAssertionsTest {
 
     @Test
     void assertIsDirectSubdirectory_negDirectSubDir() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
         Path subSubDir = Files.createDirectories(tempDir.asPath().resolve("sub").resolve("subSub"));
 
         assertThrows(PathAssertionException.class, () ->
@@ -109,8 +132,10 @@ class PathAssertionsTest {
     }
 
     @Test
-    void assertIsDirectSubdirectory_negNonExistent() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+    void assertIsDirectSubdirectory_negNonExistent() {
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
         Path subSubDir = tempDir.asPath().resolve(UUID.randomUUID().toString());
 
         assertThrows(PathAssertionException.class, () ->

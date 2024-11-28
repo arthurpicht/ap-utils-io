@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'de.arthurpicht'
-version '0.0.23'
+version '0.0.24'
 def artifact = 'ap-utils-io'
 
 repositories {
@@ -13,10 +13,10 @@ repositories {
 }
 
 dependencies {
-    implementation 'de.arthurpicht:ap-utils-core:1.19.0'
+    implementation 'de.arthurpicht:ap-utils-core:1.20.0'
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.11.3'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.3'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 java {

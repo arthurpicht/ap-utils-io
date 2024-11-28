@@ -9,8 +9,8 @@ public class URLEncoderUtil {
     /**
      * Encodes key/value pairs as required for x-www-form-urlencoded form data,
      * as submitted by HTTP POST requests. Key/value pairs are encoded in key/value
-     * tuples separated by a '&amp;' sign with a '=' sign between key and value.
-     * Non alphanumeric characters are encoded by standard URLEncoder.
+     * tuples separated by an '&amp;' sign with a '=' sign between key and value.
+     * Non-alphanumeric characters are encoded by standard URLEncoder.
      *
      * @param keyValuePairs
      * @return
@@ -21,7 +21,7 @@ public class URLEncoderUtil {
 
         for (Map.Entry<String, String> keyValuePair : keyValuePairs.entrySet()) {
 
-            if (stringBuilder.length() > 0) {
+            if (!stringBuilder.isEmpty()) {
                 stringBuilder.append("&");
             }
 

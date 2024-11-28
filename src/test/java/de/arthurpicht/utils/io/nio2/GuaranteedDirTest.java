@@ -2,10 +2,8 @@ package de.arthurpicht.utils.io.nio2;
 
 import de.arthurpicht.utils.io.nio2.GuaranteedDir.GuaranteedDirException;
 import de.arthurpicht.utils.io.tempDir.TempDir;
-import de.arthurpicht.utils.io.tempDir.TempDirs;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -14,9 +12,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class GuaranteedDirTest {
 
+    private static final String PROJECT_TEMP_DIR = "testTemp";
+
     @Test
-    void specifiedByStrings() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove("testTemp");
+    void specifiedByStrings() {
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
         String tempDirName = tempDir.asPath().getFileName().toString();
 
         Path dir = Paths.get("testTemp", tempDirName, "test");
@@ -32,8 +34,10 @@ class GuaranteedDirTest {
     }
 
     @Test
-    void specifiedByUri() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove("testTemp");
+    void specifiedByUri() {
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
         Path dir = tempDir.asPath().resolve("test");
         URI uri = dir.toUri();
 
@@ -49,8 +53,10 @@ class GuaranteedDirTest {
     }
 
     @Test
-    void specifiedByPath() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove("testTemp");
+    void specifiedByPath() {
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
         String tempDirName = tempDir.asPath().getFileName().toString();
 
         Path dir = Paths.get("testTemp", tempDirName, "test");
@@ -64,8 +70,10 @@ class GuaranteedDirTest {
     }
 
     @Test
-    void getAsSubdir() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove("testTemp");
+    void getAsSubdirectory() {
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
 
         Path dir = tempDir.asPath().resolve("test");
         assertFalse(FileUtils.isExistingDirectory(dir));
@@ -81,7 +89,7 @@ class GuaranteedDirTest {
     }
 
     @Test
-    void getAsSubdir_neg() {
+    void getAsSubdirectory_neg() {
         Path path = Paths.get("testTemp/notExisting");
         GuaranteedDirException e =
                 assertThrows(GuaranteedDirException.class, () -> GuaranteedDir.getAsSubdir(path, Paths.get("ABC")));

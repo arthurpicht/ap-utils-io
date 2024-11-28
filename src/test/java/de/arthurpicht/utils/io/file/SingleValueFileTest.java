@@ -1,7 +1,6 @@
 package de.arthurpicht.utils.io.file;
 
 import de.arthurpicht.utils.io.tempDir.TempDir;
-import de.arthurpicht.utils.io.tempDir.TempDirs;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -15,12 +14,14 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class SingleValueFileTest {
 
-    private static final String TEMP_TEST_DIR = "testTemp";
+    private static final String PROJECT_TEMP_DIR = "testTemp";
     private static TempDir tempDir;
 
     @BeforeAll
-    static void createTempDir() throws IOException {
-        tempDir = TempDirs.createUniqueTempDir(TEMP_TEST_DIR);
+    static void createTempDir() {
+        tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
     }
 
     @AfterAll
@@ -160,7 +161,7 @@ class SingleValueFileTest {
 
     @Test
     void getSpecifiedCharset() {
-        Path path = tempDir.asPath().resolve("testGetSpecifiedCharste.txt");
+        Path path = tempDir.asPath().resolve("testGetSpecifiedCharset.txt");
         SingleValueFile singleValueFile = new SingleValueFile(path, StandardCharsets.ISO_8859_1);
         assertEquals(StandardCharsets.ISO_8859_1, singleValueFile.getCharset());
     }

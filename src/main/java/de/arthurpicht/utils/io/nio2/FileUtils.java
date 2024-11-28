@@ -369,7 +369,7 @@ public class FileUtils {
         }
 
         // remove specified dir
-        subdirectories.remove(0);
+        subdirectories.removeFirst();
         return subdirectories;
     }
 

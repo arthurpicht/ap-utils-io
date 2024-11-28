@@ -100,8 +100,9 @@ public class Zip {
         if (!Files.exists(zipPath) || !Files.isRegularFile(zipPath))
             throw new IllegalArgumentException("Specified zip file not existing: [" + zipPath.toAbsolutePath() + "].");
 
-        ZipFile zipFile = new ZipFile(zipPath.toFile());
-        return Collections.list(zipFile.entries());
+        try (ZipFile zipFile = new ZipFile(zipPath.toFile())) {
+            return Collections.list(zipFile.entries());
+        }
     }
 
     public static Set<String> getZipEntryNames(Path zipPath) throws IOException {

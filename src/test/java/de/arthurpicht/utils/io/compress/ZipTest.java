@@ -2,7 +2,6 @@ package de.arthurpicht.utils.io.compress;
 
 import de.arthurpicht.utils.io.nio2.FileUtils;
 import de.arthurpicht.utils.io.tempDir.TempDir;
-import de.arthurpicht.utils.io.tempDir.TempDirs;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -10,12 +9,12 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ZipTest {
 
@@ -24,7 +23,9 @@ class ZipTest {
 
     @BeforeAll
     public static void prepare() throws IOException {
-        tempDir = TempDirs.createUniqueTempDir(Paths.get("testTemp"));
+        tempDir = new TempDir.Creator()
+                .withParentDir("testTemp")
+                .create();
         zipDir = tempDir.asPath().resolve("testMaterial/zip");
         Path aDir = Files.createDirectories(zipDir.resolve("a"));
         Path bDir = Files.createDirectories(zipDir.resolve("b"));
@@ -101,7 +102,7 @@ class ZipTest {
 
         List<? extends ZipEntry> zipEntryList = Zip.getZipEntryList(destination);
         assertEquals(1, zipEntryList.size());
-        assertEquals("test1.txt", zipEntryList.get(0).getName());
+        assertEquals("test1.txt", zipEntryList.getFirst().getName());
 
         Files.delete(destination);
     }

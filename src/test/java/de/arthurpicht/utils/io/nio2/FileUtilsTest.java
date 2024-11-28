@@ -2,13 +2,14 @@ package de.arthurpicht.utils.io.nio2;
 
 import de.arthurpicht.utils.io.assertions.PathAssertionException;
 import de.arthurpicht.utils.io.tempDir.TempDir;
-import de.arthurpicht.utils.io.tempDir.TempDirs;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,7 +23,10 @@ class FileUtilsTest {
 
     @BeforeAll
     public static void setUp() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
+
         Path rootOfTree = tempDir.asPath().resolve("rootOfTree");
         Path level_1 = Files.createDirectories(rootOfTree.resolve("level_1"));
         Files.createFile(level_1.resolve("file_1__1.txt"));
@@ -39,7 +43,10 @@ class FileUtilsTest {
 
     @Test
     void rmDirR() throws IOException {
-        Path tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR).asPath();
+        Path tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create()
+                .asPath();
 
         Files.createDirectories(tempDir.resolve("a/b/c"));
         Files.createFile(tempDir.resolve("a/file_a.txt"));
@@ -62,7 +69,10 @@ class FileUtilsTest {
     @Test
     void rmDirR_noDir_neg() throws IOException {
         // prepare
-        Path tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR).asPath();
+        Path tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create()
+                .asPath();
         Path file = tempDir.resolve("testFile.txt");
         Files.createFile(file);
         assertTrue(Files.exists(file));
@@ -255,7 +265,10 @@ class FileUtilsTest {
 
     @Test
     void copyDirectory_destinationNotExisting() throws IOException {
-        Path tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR).asPath();
+        Path tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create()
+                .asPath();
 
         Path source = Files.createDirectories(tempDir.resolve("source"));
         Files.createDirectories(source.resolve("b/c"));
@@ -273,7 +286,10 @@ class FileUtilsTest {
 
     @Test
     void copyDirectory_destinationPreExisting() throws IOException {
-        Path tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR).asPath();
+        Path tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create()
+                .asPath();
 
         Path source = Files.createDirectories(tempDir.resolve("source"));
         Files.createDirectories(source.resolve("b/c"));
@@ -303,14 +319,22 @@ class FileUtilsTest {
 
     @Test
     void hasSubdirectoriesNeg() throws IOException {
-        Path tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR).asPath();
+        Path tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create()
+                .asPath();
+
         boolean hasSubdirectories = FileUtils.hasSubdirectories(tempDir);
         assertFalse(hasSubdirectories);
     }
 
     @Test
     void forceDelete() throws IOException {
-        Path tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR).asPath();
+        Path tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create()
+                .asPath();
+
         Path targetDir = Files.createDirectories(tempDir.resolve("test"));
         Files.createFile(targetDir.resolve("test.txt"));
 
@@ -320,8 +344,12 @@ class FileUtilsTest {
     }
 
     @Test
-    void forceDeleteNeg() throws IOException {
-        Path tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR).asPath();
+    void forceDeleteNeg() {
+        Path tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create()
+                .asPath();
+
         Path targetDir = tempDir.resolve("test");
 
         IllegalArgumentException e
@@ -331,7 +359,11 @@ class FileUtilsTest {
 
     @Test
     void forceDeleteSilently() throws IOException {
-        Path tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR).asPath();
+        Path tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create()
+                .asPath();
+
         Path targetDir = Files.createDirectories(tempDir.resolve("test"));
         Files.createFile(targetDir.resolve("test.txt"));
 
@@ -341,8 +373,12 @@ class FileUtilsTest {
     }
 
     @Test
-    void forceDeleteSilentlyNotExisting() throws IOException {
-        Path tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR).asPath();
+    void forceDeleteSilentlyNotExisting() {
+        Path tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create()
+                .asPath();
+
         Path targetDir = tempDir.resolve("test");
 
         FileUtils.forceDeleteSilently(targetDir);
@@ -350,7 +386,9 @@ class FileUtilsTest {
 
     @Test
     void getSubdirectories() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
 
         Path subdirectory1 = tempDir.asPath().resolve(UUID.randomUUID().toString());
         Files.createDirectory(subdirectory1);
@@ -374,7 +412,9 @@ class FileUtilsTest {
 
     @Test
     void getSubdirectoriesEmpty() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
         List<Path> subdirectories = FileUtils.getSubdirectories(tempDir.asPath());
         assertEquals(0, subdirectories.size());
     }
@@ -391,7 +431,10 @@ class FileUtilsTest {
 
     @Test
     void getSubdirectoriesNotEndingWithTilde() throws IOException {
-        Path tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR).asPath();
+        Path tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create()
+                .asPath();
 
         Path subdirectory1 = tempDir.resolve(UUID.randomUUID().toString());
         Files.createDirectory(subdirectory1);
@@ -415,8 +458,10 @@ class FileUtilsTest {
     }
 
     @Test
-    void isExistingDir() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+    void isExistingDir() {
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
         assertTrue(FileUtils.isExistingDirectory(tempDir.asPath()));
     }
 
@@ -427,7 +472,10 @@ class FileUtilsTest {
 
     @Test
     void isSubdirectory() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
+
         Path subDir = tempDir.asPath().resolve("sub1");
         Files.createDirectory(subDir);
 
@@ -436,7 +484,9 @@ class FileUtilsTest {
 
     @Test
     void isSubdirectorySubSub() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
         Path subDir = tempDir.asPath().resolve("sub1").resolve("sub2");
         Files.createDirectories(subDir);
 
@@ -444,15 +494,19 @@ class FileUtilsTest {
     }
 
     @Test
-    void isSubdirectory_neg() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+    void isSubdirectory_neg() {
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
         assertFalse(FileUtils.isSubdirectory(tempDir.asPath(), tempDir.asPath()));
         assertFalse(FileUtils.isSubdirectory(tempDir.asPath(), tempDir.asPath().resolve("..")));
     }
 
     @Test
-    void isSubdirectory_notExistingSubDir_neg() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+    void isSubdirectory_notExistingSubDir_neg() {
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
         try {
             FileUtils.isSubdirectory(tempDir.asPath(), tempDir.asPath().resolve("not_existing"));
             fail(PathAssertionException.class.getSimpleName() + " expected");
@@ -462,8 +516,10 @@ class FileUtilsTest {
     }
 
     @Test
-    void isSubdirectory_notExistingDir_neg() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+    void isSubdirectory_notExistingDir_neg() {
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
         try {
             FileUtils.isSubdirectory(Paths.get(UUID.randomUUID().toString()), tempDir.asPath());
             fail(PathAssertionException.class.getSimpleName() + " expected");
@@ -474,7 +530,9 @@ class FileUtilsTest {
 
     @Test
     void isDirectSubdirectory() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
         Path subDir = tempDir.asPath().resolve("sub");
         Files.createDirectory(subDir);
 
@@ -483,7 +541,9 @@ class FileUtilsTest {
 
     @Test
     void isDirectSubdirectorySubSub() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
         Path subDir = tempDir.asPath().resolve("sub1").resolve("sub2");
         Files.createDirectories(subDir);
 
@@ -492,7 +552,9 @@ class FileUtilsTest {
 
     @Test
     void isDirectSubdirectoryNotNormalized() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
         Path subDir = tempDir.asPath().resolve("sub1");
         Files.createDirectory(subDir);
 
@@ -501,7 +563,9 @@ class FileUtilsTest {
 
     @Test
     void isDirectSubdirectoryNotNormalizedSubSub() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
         Path subDir = tempDir.asPath().resolve("sub1").resolve("sub2");
         Files.createDirectories(subDir);
 
@@ -510,7 +574,9 @@ class FileUtilsTest {
 
     @Test
     void getRegularNonHiddenFilesInDirectory() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
         Files.createFile(tempDir.asPath().resolve("a"));
         Files.createFile(tempDir.asPath().resolve("b"));
         Files.createFile(tempDir.asPath().resolve(".c"));
@@ -528,27 +594,35 @@ class FileUtilsTest {
     }
 
     @Test
-    void isRootDirectory_neg() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+    void isRootDirectory_neg() {
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
         assertFalse(FileUtils.isRootDirectory(tempDir.asPath()));
     }
 
     @Test
     void isNonEmptyDirectory_empty() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
         assertFalse(FileUtils.isNonEmptyDirectory(tempDir.asPath()));
     }
 
     @Test
     void isNonEmptyDirectory_containingFile() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
         Files.createFile(tempDir.asPath().resolve("a"));
         assertTrue(FileUtils.isNonEmptyDirectory(tempDir.asPath()));
     }
 
     @Test
     void isNonEmptyDirectory_containingDirectory() throws IOException {
-        TempDir tempDir = TempDirs.createUniqueTempDirAutoRemove(PROJECT_TEMP_DIR);
+        TempDir tempDir = new TempDir.Creator()
+                .withParentDir(PROJECT_TEMP_DIR)
+                .create();
         Files.createDirectory(tempDir.asPath().resolve("a"));
         assertTrue(FileUtils.isNonEmptyDirectory(tempDir.asPath()));
     }
